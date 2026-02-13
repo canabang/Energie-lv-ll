@@ -1,6 +1,7 @@
 # Package : Gestion du Lave-Linge
 # Ce fichier regroupe toute la configuration (Helpers, Sensors, Automation) pour le lave-linge.
 # Pour l'activer, assurez-vous d'avoir ajouté ce dossier à votre configuration "packages".
+# Dans configuration.yaml ajouter : packages: !include_dir_named packages
 
 homeassistant:
   packages: !include_dir_named packages
@@ -8,6 +9,9 @@ homeassistant:
 # 1. HELPERS (Entrées)
 # --------------------
 input_select:
+  # [HELPER] État de la Machine
+  # Stocke l'état actuel (Éteint / En marche / Terminé).
+  # Essentiel pour gérer les redémarrages de Home Assistant sans perdre le fil du cycle.
   etat_lave_linge:
     name: "Lave Linge - État"
     options:
@@ -17,6 +21,9 @@ input_select:
     icon: mdi:washing-machine
 
 input_datetime:
+  # [HELPER] Horodatage
+  # Deux entités pour stocker l'heure de début et de fin.
+  # Permet de calculer la durée précise du cycle, même après un redémarrage.
   debut_machine:
     name: "Lave Linge - Début"
     has_date: true
@@ -30,6 +37,9 @@ input_datetime:
 # ---------------------------------
 # Note: Si vous l'avez déjà créé via l'UI, vous pouvez commenter ce bloc.
 utility_meter:
+  # [HELPER] Compteur de Cycle
+  # Isole la consommation du cycle courant.
+  # Il est remis à zéro automatiquement au début de chaque nouveau cycle (via l'automatisation).
   compteur_prismal_cycle:
     # [CONFIG] Remplacez 'sensor.prismal_energy' par votre capteur de consommation totale (kWh)
     source: sensor.prismal_energy
@@ -40,6 +50,8 @@ utility_meter:
 # -------------------
 template:
   - binary_sensor:
+      # [SENSOR] Détection de fonctionnement
+      # Ce capteur passe à ON quand la puissance dépasse le seuil défini (machine en cours de lavage).
       - name: "Lave Linge En Marche"
         unique_id: lave_linge_en_marche
         device_class: running
@@ -54,6 +66,8 @@ template:
         icon: mdi:washing-machine
 
   - sensor:
+      # [SENSOR] État Composite
+      # Combine la détection de puissance (Lavage) et la mémorisation de fin de cycle (Terminé) via l'input_select.
       - name: "Lave Linge État"
         unique_id: lave_linge_etat
         icon: mdi:state-machine
@@ -66,6 +80,8 @@ template:
             Éteint
           {% endif %}
 
+      # [SENSOR] Calcul de la Durée
+      # Affiche le temps écoulé depuis le début (si en cours) ou la durée totale du dernier cycle (si terminé).
       - name: "Lave Linge Durée Cycle"
         unique_id: lave_linge_duree_cycle
         icon: mdi:timer
@@ -93,6 +109,8 @@ template:
           debut: "{{ states('input_datetime.debut_machine') }}"
           fin: "{{ states('input_datetime.fin_machine') }}"
 
+      # [SENSOR] Estimation du Coût
+      # Multiplie la consommation du cycle actuel (kWh) par le prix unitaire (€/kWh).
       - name: "Lave Linge Coût Cycle"
         unique_id: lave_linge_cout_cycle
         icon: mdi:cash
@@ -110,16 +128,19 @@ automation:
     description: "Gestion complète du cycle et des notifications (Version Package)"
     mode: restart
     triggers:
+      # 1. DÉMARRAGE : Quand la puissance dépasse le seuil (via le binary_sensor)
       - trigger: state
         entity_id: binary_sensor.lave_linge_en_marche
         from: "off"
         to: "on"
         id: "demarrage"
+      # 2. FIN : Quand la puissance repasse sous le seuil
       - trigger: state
         entity_id: binary_sensor.lave_linge_en_marche
         from: "on"
         to: "off"
         id: "fin"
+      # 3. REDÉMARRAGE HA : Pour relancer la boucle de notification si le cycle était "Terminé"
       - trigger: homeassistant
         event: start
         id: "redemarrage"
@@ -127,6 +148,7 @@ automation:
     actions:
       - choose:
           # CAS A : DÉMARRAGE
+          # On initialise tout : Reset compteur kWh, État=En marche, Heure de début.
           - conditions:
               - condition: trigger
                 id: "demarrage"
@@ -149,6 +171,7 @@ automation:
                   message: "La machine à laver est lancée."
 
           # CAS B : FIN DU CYCLE
+          # On valide la fin : État=Terminé, Heure de fin.
           - conditions:
               - condition: trigger
                 id: "fin"
@@ -165,6 +188,7 @@ automation:
                   datetime: "{{ now() }}"
 
           # CAS C : REDÉMARRAGE HA
+          # Sécurité : On attend que les entités soient prêtes pour éviter les erreurs de lecture.
           - conditions:
               - condition: trigger
                 id: "redemarrage"
@@ -188,28 +212,15 @@ automation:
         then:
           - repeat:
               sequence:
-                - action: script.k_2so_generateur_de_message
+                - action: persistent_notification.create
                   data:
-                    mission: machine à laver finie
-                    consigne: |
-                      Annonce la fin du cycle.
-                      Consommation : {{ states('sensor.compteur_prismal_cycle') }} kWh.
-                      Durée : {{ states('sensor.lave_linge_duree_cycle') }}.
-                      Ton : Serviable mais pressant.
-                  response_variable: generated_message
-                
-                - action: script.notification_alexa
-                  data:
-                    message: "{{ generated_message.data }}"
-                
-                - action: script.awtrix_dynamique_customapp_and_notify
-                  data:
-                    icone: mal
-                    rainbow: "true"
-                    scrollspeed: "50"
-                    color: "#2e8b57"
-                    duree: "25"
-                    message: "Lave-Linge Fin | {{ generated_message.data }}"
+                    message: |
+                      Cycle terminé.
+                      Durée : {{ states('sensor.lave_linge_duree_cycle') }}
+                      Conso : {{ states('sensor.compteur_prismal_cycle') }} kWh
+                      Coût : {{ states('sensor.lave_linge_cout_cycle') }} €
+                    title: "🧺 Lave-Linge Terminé"
+                    notification_id: "lave_linge_fin"
 
                 - delay:
                     hours: 0
