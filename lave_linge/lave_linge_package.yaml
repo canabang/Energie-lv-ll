@@ -1,10 +1,13 @@
 # Package : Gestion du Lave-Linge
 # Ce fichier regroupe toute la configuration (Helpers, Sensors, Automation) pour le lave-linge.
 # Pour l'activer, assurez-vous d'avoir ajouté ce dossier à votre configuration "packages".
-# Dans configuration.yaml ajouter : packages: !include_dir_named packages
+# Dans configuration.yaml ajouter :
 
-homeassistant:
-  packages: !include_dir_named packages
+# homeassistant:
+#   packages: !include_dir_named packages
+
+###########################################################
+
 
 # 1. HELPERS (Entrées)
 # --------------------
