@@ -1,6 +1,7 @@
 # À inclure dans votre configuration via !include_dir_merge_list ou à copier dans templates.yaml
 
 # Capteur Binaire : En Marche / Arrêt
+# Détecte si la machine consomme de l'électricité
 - binary_sensor:
     - name: "Lave Linge En Marche"
       unique_id: lave_linge_en_marche
@@ -10,11 +11,14 @@
       delay_off:
         minutes: 3  # Petite tempo pour éviter les faux arrêts
       state: >
+        # [CONFIG] Ajustez le seuil (ici 5W) selon la veille de votre machine
         {{ states('sensor.prismal_power')|float(0) > 5 }}
       icon: mdi:washing-machine
 
 # Capteurs d'États et Calculs
 - sensor:
+    # Capteur État Composite
+    # Combine la détection électrique et la mémoire "Terminé" (via input_select)
     - name: "Lave Linge État"
       unique_id: lave_linge_etat
       icon: mdi:state-machine
@@ -27,6 +31,8 @@
           Éteint
         {% endif %}
 
+    # Calcul de la Durée
+    # Affiche le temps écoulé (si en cours) ou la durée totale (si terminé)
     - name: "Lave Linge Durée Cycle"
       unique_id: lave_linge_duree_cycle
       icon: mdi:timer
@@ -58,11 +64,14 @@
         debut: "{{ states('input_datetime.debut_machine') }}"
         fin: "{{ states('input_datetime.fin_machine') }}"
 
+    # Estimation du Coût
+    # Multiplie les kWh du cycle par le prix unitaire
     - name: "Lave Linge Coût Cycle"
       unique_id: lave_linge_cout_cycle
       icon: mdi:cash
       unit_of_measurement: "€"
       state: >
         {% set energie = states('sensor.compteur_prismal_cycle') | float(0) %}
+        # [CONFIG] Remplacez par votre entité de coût du kWh
         {% set prix = states('input_number.cout_du_kwh') | float(0) %}
         {{ (energie * prix) | round(2) }}
