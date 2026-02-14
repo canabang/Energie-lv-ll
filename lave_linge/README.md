@@ -63,7 +63,21 @@ Ce système repose sur plusieurs briques qui travaillent ensemble :
 *   **`lave_linge_templates.yaml`** : **Pour la Méthode 2 (Manuelle).** Contient les capteurs seuls.
 *   **`dashboard_prismal.yaml`** : Code YAML de la carte Lovelace (Dashboard) associée.
 
-## 🚀 Installation & Utilisation
+## � Interface (Dashboard)
+
+Voici à quoi ressemble la carte une fois installée :
+
+![Aperçu de la carte](carte%20lave%20linge.png)
+
+Le code complet de cette carte se trouve dans le fichier **`dashboard_prismal.yaml`**.
+*   **Compatible avec les deux méthodes** : Que vous utilisiez le Package ou l'installation Manuelle, les entités ont les mêmes noms.
+*   **Fonctionnalités** :
+    *   État en temps réel + animation (icône qui tourne si en marche).
+    *   Temps écoulé / Durée totale.
+    *   Coût du cycle.
+    *   Graphique de consommation (Puissance, Tension, Ampérage).
+
+## �🚀 Installation & Utilisation
 
 Vous avez deux méthodes pour installer cette configuration.
 
