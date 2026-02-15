@@ -102,10 +102,7 @@ Vous avez deux méthodes pour installer cette configuration.
 5.  **Configuration Finale** : Une fois redémarré, allez dans *Paramètres > Entrées*, trouvez `Coût du kWh` et définissez votre prix.
 
 ### Méthode 2 : L'Installation "À la carte" (Manuelle) 🛠️
-*Si vous préférez séparer vos fichiers ou utiliser l'interface graphique.*
-
-### Méthode 2 : L'Installation "À la carte" (Manuelle) 🛠️
-*Pour ceux qui utilisent des fichiers séparés (`!include`).*
+*Si vous préférez séparer vos fichiers (`!include`) ou utiliser l'interface graphique.*
 
 1.  **Entrées (Helpers) : VIA FICHIERS YAML OU UI**
     *   Copiez le contenu de `input_select.yaml`, `input_datetime.yaml`, `utility_meter.yaml`, `input_number.yaml` dans vos fichiers respectifs.
