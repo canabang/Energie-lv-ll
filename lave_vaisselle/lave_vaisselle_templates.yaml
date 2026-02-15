@@ -1,0 +1,77 @@
+# À inclure dans votre configuration via !include_dir_merge_list ou à copier dans templates.yaml
+
+# Capteur Binaire : En Marche / Arrêt
+# Détecte si la machine consomme de l'électricité
+- binary_sensor:
+    - name: "Lave Vaisselle En Marche"
+      unique_id: lave_vaisselle_en_marche
+      device_class: running
+      delay_on:
+        minutes: 1
+      delay_off:
+        minutes: 3  # Petite tempo pour éviter les faux arrêts
+      state: >
+        # [CONFIG] Ajustez le seuil (ici 5W) selon la veille de votre machine
+        {{ states('sensor.prislavvais_power')|float(0) > 5 }}
+      icon: mdi:dishwasher
+
+# Capteurs d'États et Calculs
+- sensor:
+    # Capteur État Composite
+    # Combine la détection électrique et la mémoire "Terminé" (via input_select)
+    - name: "Lave Vaisselle État"
+      unique_id: lave_vaisselle_etat
+      icon: mdi:state-machine
+      state: >
+        {% if is_state('binary_sensor.lave_vaisselle_en_marche', 'on') %}
+          Lavage
+        {% elif is_state('input_select.etat_lave_vaisselle', 'Terminé') %}
+          Terminé
+        {% else %}
+          Éteint
+        {% endif %}
+
+    # Calcul de la Durée
+    # Affiche le temps écoulé (si en cours) ou la durée totale (si terminé)
+    - name: "Lave Vaisselle Durée Cycle"
+      unique_id: lave_vaisselle_duree_cycle
+      icon: mdi:timer
+      state: >
+        {% set debut = states('input_datetime.debut_lave_vaisselle') %}
+        {% set fin = states('input_datetime.fin_lave_vaisselle') %}
+        {% set etat = states('sensor.lave_vaisselle_etat') %}
+        
+        {% if debut != 'unknown' %}
+          {% set debut_ts = as_timestamp(debut) %}
+          {% set now_ts = as_timestamp(now()) %}
+          
+          {% if etat == 'Lavage' %}
+            {# En cours : Différence entre Maintenant et Début #}
+            {{ ((now_ts - debut_ts) / 60) | round(0) }} min
+            
+          {% elif etat == 'Terminé' and fin != 'unknown' %}
+             {# Terminé : Différence entre Fin et Début #}
+             {% set fin_ts = as_timestamp(fin) %}
+             {{ ((fin_ts - debut_ts) / 60) | round(0) }} min
+             
+          {% else %}
+            0 min
+          {% endif %}
+        {% else %}
+          Inconnu
+        {% endif %}
+      attributes:
+        debut: "{{ states('input_datetime.debut_lave_vaisselle') }}"
+        fin: "{{ states('input_datetime.fin_lave_vaisselle') }}"
+
+    # Estimation du Coût
+    # Multiplie les kWh du cycle par le prix unitaire
+    - name: "Lave Vaisselle Coût Cycle"
+      unique_id: lave_vaisselle_cout_cycle
+      icon: mdi:cash
+      unit_of_measurement: "€"
+      state: >
+        {% set energie = states('sensor.compteur_prislavvais_cycle') | float(0) %}
+        # [CONFIG] Remplacez par votre entité de coût du kWh
+        {% set prix = states('input_number.cout_du_kwh') | float(0) %}
+        {{ (energie * prix) | round(2) }}

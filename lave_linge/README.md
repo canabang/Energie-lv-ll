@@ -50,6 +50,13 @@ Ce système repose sur plusieurs briques qui travaillent ensemble :
     *   **Durée** : Calcule le temps écoulé en direct.
     *   **Coût** : Multiplie les kWh du cycle par votre prix du kWh.
 
+### 5. La Gestion du Coût (`input_number`)
+⚠️ **Point Important** : Le calcul du coût repose sur l'entité `input_number.cout_du_kwh`.
+*   **Vous devez créer cette entité** (dans Paramètres > Appareils et services > Entrées > Créer une entrée > Nombre).
+*   **Adaptation selon votre abonnement** :
+    *   **Tarif Base** : Mettez simplement votre prix fixe (ex: 0.2516) dans la valeur.
+    *   **Tarif Heures Pleines / Heures Creuses (HP/HC)** : Vous devez automatiser la mise à jour de ce nombre. Par exemple, une automatisation qui change la valeur à 0.27 (HP) ou 0.20 (HC) selon l'heure ou l'état de votre compteur Linky.
+
 ---
 
 ## 📂 Contenu du dossier

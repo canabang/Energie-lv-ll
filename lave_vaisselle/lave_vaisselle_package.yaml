@@ -1,0 +1,231 @@
+# Package : Gestion du Lave-Vaisselle
+# Ce fichier regroupe toute la configuration (Helpers, Sensors, Automation) pour le lave-vaisselle.
+# Pour l'activer, assurez-vous d'avoir ajouté ce dossier à votre configuration "packages".
+
+# 1. HELPERS (Entrées)
+# --------------------
+input_select:
+  # [HELPER] État de la Machine
+  # Stocke l'état actuel (Éteint / En marche / Terminé).
+  # Essentiel pour gérer les redémarrages de Home Assistant sans perdre le fil du cycle.
+  etat_lave_vaisselle:
+    name: "Lave Vaisselle - État"
+    options:
+      - Éteint
+      - En marche
+      - Terminé
+    icon: mdi:dishwasher
+
+input_datetime:
+  # [HELPER] Horodatage
+  # Deux entités pour stocker l'heure de début et de fin.
+  # Permet de calculer la durée précise du cycle, même après un redémarrage.
+  debut_lave_vaisselle:
+    name: "Lave Vaisselle - Début"
+    has_date: true
+    has_time: true
+  fin_lave_vaisselle:
+    name: "Lave Vaisselle - Fin"
+    has_date: true
+    has_time: true
+
+# 2. UTILITY METER (Compteur Cycle)
+# ---------------------------------
+# Note: Si vous l'avez déjà créé via l'UI, vous pouvez commenter ce bloc.
+utility_meter:
+  # [HELPER] Compteur de Cycle
+  # Isole la consommation du cycle courant.
+  # Il est remis à zéro automatiquement au début de chaque nouveau cycle (via l'automatisation).
+  compteur_prislavvais_cycle:
+    # [CONFIG] Remplacez 'sensor.prislavvais_energy' par votre capteur de consommation totale (kWh)
+    source: sensor.prislavvais_energy
+    name: "Compteur PrisLavVais Cycle"
+    cycle: never  # Remise à zéro manuelle par l'automatisation
+
+# 3. TEMPLATE SENSORS
+# -------------------
+template:
+  - binary_sensor:
+      # [SENSOR] Détection de fonctionnement
+      # Ce capteur passe à ON quand la puissance dépasse le seuil défini (machine en cours de lavage).
+      - name: "Lave Vaisselle En Marche"
+        unique_id: lave_vaisselle_en_marche
+        device_class: running
+        delay_on:
+          minutes: 1
+        delay_off:
+          minutes: 3
+        state: >
+          # [CONFIG] Remplacez 'sensor.prislavvais_power' par votre capteur de puissance (W)
+          # Ajustez le seuil (ici > 5W) selon la veille de votre appareil
+          {{ states('sensor.prislavvais_power')|float(0) > 5 }}
+        icon: mdi:dishwasher
+
+  - sensor:
+      # [SENSOR] État Composite
+      # Combine la détection de puissance (Lavage) et la mémorisation de fin de cycle (Terminé) via l'input_select.
+      - name: "Lave Vaisselle État"
+        unique_id: lave_vaisselle_etat
+        icon: mdi:state-machine
+        state: >
+          {% if is_state('binary_sensor.lave_vaisselle_en_marche', 'on') %}
+            Lavage
+          {% elif is_state('input_select.etat_lave_vaisselle', 'Terminé') %}
+            Terminé
+          {% else %}
+            Éteint
+          {% endif %}
+
+      # [SENSOR] Calcul de la Durée
+      # Affiche le temps écoulé depuis le début (si en cours) ou la durée totale du dernier cycle (si terminé).
+      - name: "Lave Vaisselle Durée Cycle"
+        unique_id: lave_vaisselle_duree_cycle
+        icon: mdi:timer
+        state: >
+          {% set debut = states('input_datetime.debut_lave_vaisselle') %}
+          {% set fin = states('input_datetime.fin_lave_vaisselle') %}
+          {% set etat = states('sensor.lave_vaisselle_etat') %}
+          
+          {% if debut != 'unknown' %}
+            {% set debut_ts = as_timestamp(debut) %}
+            {% set now_ts = as_timestamp(now()) %}
+            
+            {% if etat == 'Lavage' %}
+              {{ ((now_ts - debut_ts) / 60) | round(0) }} min
+            {% elif etat == 'Terminé' and fin != 'unknown' %}
+               {% set fin_ts = as_timestamp(fin) %}
+               {{ ((fin_ts - debut_ts) / 60) | round(0) }} min
+            {% else %}
+              0 min
+            {% endif %}
+          {% else %}
+            Inconnu
+          {% endif %}
+        attributes:
+          debut: "{{ states('input_datetime.debut_lave_vaisselle') }}"
+          fin: "{{ states('input_datetime.fin_lave_vaisselle') }}"
+
+      # [SENSOR] Estimation du Coût
+      # Multiplie la consommation du cycle actuel (kWh) par le prix unitaire (€/kWh).
+      - name: "Lave Vaisselle Coût Cycle"
+        unique_id: lave_vaisselle_cout_cycle
+        icon: mdi:cash
+        unit_of_measurement: "€"
+        state: >
+          {% set energie = states('sensor.compteur_prislavvais_cycle') | float(0) %}
+          # [CONFIG] Remplacez 'input_number.cout_du_kwh' par votre entité de coût unitaire
+          {% set prix = states('input_number.cout_du_kwh') | float(0) %}
+          {{ (energie * prix) | round(2) }}
+
+# 4. AUTOMATION
+# -------------
+automation:
+  - alias: 🍽️ Lave-Vaisselle - Gestion Cycle & Notifications (Package)
+    description: "Gestion complète du cycle et des notifications (Version Package)"
+    mode: restart
+    triggers:
+      # 1. DÉMARRAGE : Quand la puissance dépasse le seuil (via le binary_sensor)
+      - trigger: state
+        entity_id: binary_sensor.lave_vaisselle_en_marche
+        from: "off"
+        to: "on"
+        id: "demarrage"
+      # 2. FIN : Quand la puissance repasse sous le seuil
+      - trigger: state
+        entity_id: binary_sensor.lave_vaisselle_en_marche
+        from: "on"
+        to: "off"
+        id: "fin"
+      # 3. REDÉMARRAGE HA : Pour relancer la boucle de notification si le cycle était "Terminé"
+      - trigger: homeassistant
+        event: start
+        id: "redemarrage"
+    conditions: []
+    actions:
+      - choose:
+          # CAS A : DÉMARRAGE
+          # On initialise tout : Reset compteur kWh, État=En marche, Heure de début.
+          - conditions:
+              - condition: trigger
+                id: "demarrage"
+            sequence:
+              - action: utility_meter.reset
+                target:
+                  entity_id: sensor.compteur_prislavvais_cycle
+              - action: input_select.select_option
+                target:
+                  entity_id: input_select.etat_lave_vaisselle
+                data:
+                  option: "En marche"
+              - action: input_datetime.set_datetime
+                target:
+                  entity_id: input_datetime.debut_lave_vaisselle
+                data:
+                  datetime: "{{ now() }}"
+              - action: script.notification_alexa
+                data:
+                  message: "Le lave-vaisselle est lancé."
+
+          # CAS B : FIN DU CYCLE
+          # On valide la fin : État=Terminé, Heure de fin.
+          - conditions:
+              - condition: trigger
+                id: "fin"
+            sequence:
+              - action: input_select.select_option
+                target:
+                  entity_id: input_select.etat_lave_vaisselle
+                data:
+                  option: "Terminé"
+              - action: input_datetime.set_datetime
+                target:
+                  entity_id: input_datetime.fin_lave_vaisselle
+                data:
+                  datetime: "{{ now() }}"
+
+          # CAS C : REDÉMARRAGE HA
+          # Sécurité : On attend que les entités soient prêtes pour éviter les erreurs de lecture.
+          - conditions:
+              - condition: trigger
+                id: "redemarrage"
+            sequence:
+              # On attend que les entités soient disponibles
+              - wait_template: >-
+                  {{ has_value('input_select.etat_lave_vaisselle') and 
+                     has_value('switch.prislavvais') }} # [CONFIG] Remplacez par votre prise connectée
+                timeout: "00:05:00"
+                continue_on_timeout: false
+
+      # BOUCLE DE NOTIFICATION (COMMUNE)
+      - if:
+          - condition: state
+            entity_id: input_select.etat_lave_vaisselle
+            state: "Terminé"
+          - condition: state
+            # [CONFIG] Remplacez par votre prise connectée
+            entity_id: switch.prislavvais
+            state: "on"
+        then:
+          - repeat:
+              sequence:
+                - action: persistent_notification.create
+                  data:
+                    message: |
+                      Cycle terminé.
+                      Durée : {{ states('sensor.lave_vaisselle_duree_cycle') }}
+                      Conso : {{ states('sensor.compteur_prislavvais_cycle') }} kWh
+                      Coût : {{ states('sensor.lave_vaisselle_cout_cycle') }} €
+                    title: "🍽️ Lave-Vaisselle Terminé"
+                    notification_id: "lave_vaisselle_fin"
+
+                - delay:
+                    hours: 0
+                    minutes: 5
+                    seconds: 0
+                    milliseconds: 0
+
+              while:
+                - condition: state
+                  # [CONFIG] La boucle s'arrête si la prise est éteinte
+                  entity_id: switch.prislavvais
+                  state: "on"
