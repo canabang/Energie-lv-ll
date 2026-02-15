@@ -3,4 +3,4 @@ compteur_prislavvais_cycle:
   # [CONFIG] Remplacez 'sensor.prislavvais_energy' par votre capteur de consommation totale (kWh)
   source: sensor.prislavvais_energy
   name: "Compteur PrisLavVais Cycle"
-  cycle: never  # Remise à zéro manuelle par l'automatisation
+  # cycle: never # Option invalide en YAML. Laisser vide = Pas de cycle automatique.

@@ -4,6 +4,19 @@
 
 # 1. HELPERS (Entrées)
 # --------------------
+input_number:
+  # [HELPER] Coût du kWh
+  # Utilisé pour calculer le coût de chaque cycle.
+  # Valeur par défaut : 0. À configurer selon votre abonnement (ex: 0.2516).
+  cout_du_kwh:
+    name: "Coût du kWh"
+    min: 0
+    max: 10
+    step: 0.0001
+    unit_of_measurement: "€/kWh"
+    icon: mdi:currency-eur
+    mode: box
+
 input_select:
   # [HELPER] État de la Machine
   # Stocke l'état actuel (Éteint / En marche / Terminé).
@@ -37,10 +50,10 @@ utility_meter:
   # Isole la consommation du cycle courant.
   # Il est remis à zéro automatiquement au début de chaque nouveau cycle (via l'automatisation).
   compteur_prislavvais_cycle:
-    # [CONFIG] Remplacez 'sensor.prislavvais_energy' par votre capteur de consommation totale (kWh)
+    # [A_CHANGER] Remplacez 'sensor.prislavvais_energy' par votre capteur de consommation totale (kWh)
     source: sensor.prislavvais_energy
     name: "Compteur PrisLavVais Cycle"
-    cycle: never  # Remise à zéro manuelle par l'automatisation
+    # cycle: never # Pas de cycle automatique (reset manuel via automation)
 
 # 3. TEMPLATE SENSORS
 # -------------------
@@ -56,7 +69,7 @@ template:
         delay_off:
           minutes: 3
         state: >
-          # [CONFIG] Remplacez 'sensor.prislavvais_power' par votre capteur de puissance (W)
+          # [A_CHANGER] Remplacez 'sensor.prislavvais_power' par votre capteur de puissance (W)
           # Ajustez le seuil (ici > 5W) selon la veille de votre appareil
           {{ states('sensor.prislavvais_power')|float(0) > 5 }}
         icon: mdi:dishwasher
@@ -113,7 +126,7 @@ template:
         unit_of_measurement: "€"
         state: >
           {% set energie = states('sensor.compteur_prislavvais_cycle') | float(0) %}
-          # [CONFIG] Remplacez 'input_number.cout_du_kwh' par votre entité de coût unitaire
+          # [A_CHANGER] Remplacez 'input_number.cout_du_kwh' par votre entité de coût unitaire
           {% set prix = states('input_number.cout_du_kwh') | float(0) %}
           {{ (energie * prix) | round(2) }}
 
@@ -192,7 +205,7 @@ automation:
               # On attend que les entités soient disponibles
               - wait_template: >-
                   {{ has_value('input_select.etat_lave_vaisselle') and 
-                     has_value('switch.prislavvais') }} # [CONFIG] Remplacez par votre prise connectée
+                     has_value('switch.prislavvais') }} # [A_CHANGER] Remplacez par votre prise connectée
                 timeout: "00:05:00"
                 continue_on_timeout: false
 
@@ -202,7 +215,7 @@ automation:
             entity_id: input_select.etat_lave_vaisselle
             state: "Terminé"
           - condition: state
-            # [CONFIG] Remplacez par votre prise connectée
+            # [A_CHANGER] Remplacez par votre prise connectée
             entity_id: switch.prislavvais
             state: "on"
         then:
@@ -226,6 +239,6 @@ automation:
 
               while:
                 - condition: state
-                  # [CONFIG] La boucle s'arrête si la prise est éteinte
+                  # [A_CHANGER] La boucle s'arrête si la prise est éteinte
                   entity_id: switch.prislavvais
                   state: "on"

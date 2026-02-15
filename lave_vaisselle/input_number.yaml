@@ -1,0 +1,11 @@
+# [HELPER] Coût du kWh
+# Utilisé pour calculer le coût de chaque cycle.
+# À configurer selon votre abonnement (ex: 0.2516).
+cout_du_kwh:
+  name: "Coût du kWh"
+  min: 0
+  max: 10
+  step: 0.0001
+  unit_of_measurement: "€/kWh"
+  icon: mdi:currency-eur
+  mode: box

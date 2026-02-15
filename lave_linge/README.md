@@ -32,30 +32,30 @@ Si Home Assistant redémarre **PENDANT** un lavage ou **APRÈS** la fin (mais av
 
 Ce système repose sur plusieurs briques qui travaillent ensemble :
 
-1.  **Le Capteur Binaire (`binary_sensor`)** : C'est la sentinelle.
-    *   Il surveille la puissance électrique.
-    *   Il décide si la machine est "ON" (>5W pendant 1 min) ou "OFF" (<5W pendant 3 min).
-    *   C'est lui qui déclenche l'automatisation.
+1.  **Le Capteur Binaire (`binary_sensor`)** :
+    *   **Nom** : `binary_sensor.lave_linge_en_marche`
+    *   **Rôle** : C'est la sentinelle. Il surveille la consommation électrique de la prise.
+    *   **Fonctionnement** : Il passe à "ON" quand la puissance dépasse **5W** (début de cycle) et repasse à "OFF" quand elle reste sous 5W pendant 3 minutes (fin de cycle). C'est lui qui réveille l'automatisation.
 
 2.  **Les "Helpers" (La Mémoire)** :
-    *   `input_select` : Retient l'état du cycle (En marche / Terminé / Éteint) même si HA redémarre.
-    *   `input_datetime` : Retient l'heure exacte du début et de la fin pour le calcul de durée.
+    *   **`input_select.etat_lave_linge`** : Retient l'état du cycle (En marche / Terminé / Éteint) même si HA redémarre.
+    *   **`input_datetime.debut_machine`** : Retient l'heure exacte du début.
+    *   **`input_datetime.fin_machine`** : Retient l'heure exacte de la fin.
 
 3.  **Le Compteur (`utility_meter`)** :
+    *   **Nom** : `sensor.compteur_prismal_cycle`
     *   Il isole la consommation électrique (kWh) du cycle en cours.
     *   Il est remis à zéro automatiquement au début de chaque lavage.
 
 4.  **Les Capteurs Intelligents (`template_sensor`)** :
-    *   **État** : Affiche un état lisible ("Lavage", "Terminé") en combinant le capteur binaire et la mémoire.
-    *   **Durée** : Calcule le temps écoulé en direct.
-    *   **Coût** : Multiplie les kWh du cycle par votre prix du kWh.
+    *   **État** (`sensor.lave_linge_etat`) : Affiche un état lisible ("Lavage", "Terminé") en combinant le capteur binaire et la mémoire.
+    *   **Durée** (`sensor.lave_linge_duree_cycle`) : Calcule le temps écoulé en direct.
+    *   **Coût** (`sensor.lave_linge_cout_cycle`) : Multiplie les kWh du cycle par votre prix du kWh.
 
-### 5. La Gestion du Coût (`input_number`)
-⚠️ **Point Important** : Le calcul du coût repose sur l'entité `input_number.cout_du_kwh`.
-*   **Vous devez créer cette entité** (dans Paramètres > Appareils et services > Entrées > Créer une entrée > Nombre).
-*   **Adaptation selon votre abonnement** :
-    *   **Tarif Base** : Mettez simplement votre prix fixe (ex: 0.2516) dans la valeur.
-    *   **Tarif Heures Pleines / Heures Creuses (HP/HC)** : Vous devez automatiser la mise à jour de ce nombre. Par exemple, une automatisation qui change la valeur à 0.27 (HP) ou 0.20 (HC) selon l'heure ou l'état de votre compteur Linky.
+5.  **La Gestion du Coût (`input_number`)** :
+    *   **Nom** : `input_number.cout_du_kwh`
+    *   ⚠️ **Configuration** : Valeur par défaut : 0 €. Vous devez définir votre prix du kWh (ex: 0.2516) via l'interface (Paramètres > Appareils et services > Entrées > Coût du kWh).
+    *   **Abonnement HP/HC** : Pour gérer les heures pleines/creuses, vous devrez créer une automatisation séparée qui met à jour cette valeur automatiquement selon l'heure.
 
 ---
 
@@ -67,7 +67,7 @@ Ce système repose sur plusieurs briques qui travaillent ensemble :
     *   **Template Sensors** pour calculer la durée, le coût et détecter l'état.
     *   **Automation** pour gérer le cycle et envoyer les notifications.
 *   **`lave_linge_automation.yaml`** : Automation seule (pour Copier-Coller UI).
-*   **`templates.yaml`**, **`input_select.yaml`**, **`input_datetime.yaml`**, **`utility_meter.yaml`** : Fichiers découpés pour l'intégration `!include`.
+*   **`templates.yaml`**, **`input_select.yaml`**, **`input_datetime.yaml`**, **`utility_meter.yaml`**, **`input_number.yaml`** : Fichiers découpés pour l'intégration `!include`.
 *   **`dashboard_prismal.yaml`** : Code YAML de la carte Lovelace (Dashboard) associée.
 
 ## � Interface (Dashboard)
@@ -97,8 +97,9 @@ Vous avez deux méthodes pour installer cette configuration.
       packages: !include_dir_named packages
     ```
 2.  Copiez le fichier **`lave_linge_package.yaml`** dans votre dossier `packages/`.
-3.  **Adaptez la configuration** : Ouvrez le fichier et recherchez les commentaires `# [CONFIG]`. Vous devez renseigner vos entités (prise, puissance, énergie, coût).
-4.  Redémarrez Home Assistant.
+3.  **Adaptez la configuration** : Ouvrez le fichier et recherchez les commentaires `# [A_CHANGER]`. Vous devez renseigner vos entités (prise, puissance, énergie, coût).
+4.  **Redémarrez Home Assistant**.
+5.  **Configuration Finale** : Une fois redémarré, allez dans *Paramètres > Entrées*, trouvez `Coût du kWh` et définissez votre prix.
 
 ### Méthode 2 : L'Installation "À la carte" (Manuelle) 🛠️
 *Si vous préférez séparer vos fichiers ou utiliser l'interface graphique.*
@@ -106,10 +107,15 @@ Vous avez deux méthodes pour installer cette configuration.
 ### Méthode 2 : L'Installation "À la carte" (Manuelle) 🛠️
 *Pour ceux qui utilisent des fichiers séparés (`!include`).*
 
-1.  **Entrées (Helpers) : VIA FICHIERS YAML**
-    *   Copiez le contenu de **`input_select.yaml`** dans votre fichier `input_select.yaml`.
-    *   Copiez le contenu de **`input_datetime.yaml`** dans votre fichier `input_datetime.yaml`.
-    *   Copiez le contenu de **`utility_meter.yaml`** dans votre fichier `utility_meter.yaml`.
+1.  **Entrées (Helpers) : VIA FICHIERS YAML OU UI**
+    *   Copiez le contenu de `input_select.yaml`, `input_datetime.yaml`, `utility_meter.yaml`, `input_number.yaml` dans vos fichiers respectifs.
+    *   **OU** créez ces entités via l'interface (UI) :
+        *   **`input_select.etat_lave_linge`** : Liste déroulante (`Éteint`, `En marche`, `Terminé`).
+        *   **`input_datetime.debut_machine`** : Date et/ou heure (Date + Heure).
+        *   **`input_datetime.fin_machine`** : Date et/ou heure (Date + Heure).
+        *   **`input_number.cout_du_kwh`** : Nombre (Boîte de saisie).
+        *   **`utility_meter.compteur_prismal_cycle`** : Compteur (Pas de cycle).
+    *   **⚠️ IMPORTANT** : Quelque soit la méthode, n'oubliez pas de définir votre coût du kWh dans `input_number.cout_du_kwh` !
 
 2.  **Sensors : VIA FICHIER YAML**
     *   Copiez le contenu de **`templates.yaml`** dans votre fichier `templates.yaml` (ou votre dossier `templates/`).
