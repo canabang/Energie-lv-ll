@@ -1,41 +1,54 @@
-# ⚡ Configuration PrisMal & PrisLavVais
+# ⚡ Gestion Énergie & Cycles (Lave-Linge / Lave-Vaisselle)
 
-Ce dossier contient les tableaux de bord pour le suivi énergétique des prises **PrisMal** et **PrisLavVais**.
-
-## 1. Création des Compteurs (Utility Meter)
-
-Pour que le calcul du coût fonctionne et que le total ne se remette pas à zéro, vous devez créer deux **Compteurs de services publics** via l'interface de Home Assistant.
-
-**Chemin :**
-`Paramètres` > `Appareils et services` > `Entrées` > `Créer une entrée` > **`Compteur de services publics (eau, gaz, électricité…)`**
-
-### Configuration pour PrisMal
-*   **Nom** : `Compteur PrisMal Total`
-    *   *Cela générera l'ID `sensor.compteur_prismal_total` (à vérifier/modifier si nécessaire)*
-*   **Capteur d'entrée** : `sensor.prismal_energy`
-*   **Cycle de remise à zéro** : `Pas de cycle` (Never)
-
-### Configuration pour PrisLavVais
-*   **Nom** : `Compteur PrisLavVais Total`
-    *   *Cela générera l'ID `sensor.compteur_prislavvais_total` (à vérifier/modifier si nécessaire)*
-*   **Capteur d'entrée** : `sensor.prislavvais_energy`
-*   **Cycle de remise à zéro** : `Pas de cycle` (Never)
+Ce package contient une solution complète et robuste pour surveiller, calculer le coût et notifier la fin des cycles de vos appareils électroménagers (Lave-Linge et Lave-Vaisselle) dans Home Assistant.
 
 ---
 
-## 2. Tableaux de Bord (Dashboards)
+## ✨ Fonctionnalités Clés
 
-Deux fichiers YAML sont disponibles pour l'affichage :
-
-*   [`dashboard_prismal.yaml`](./dashboard_prismal.yaml) : Carte pour la prise PrisMal.
-*   [`dashboard_prislavvais.yaml`](./dashboard_prislavvais.yaml) : Carte pour la prise PrisLavVais.
-
-### Installation
-Vous pouvez copier le contenu de ces fichiers dans une carte "Manuel" (YAML) sur votre tableau de bord, ou utiliser `!include` si vous gérez vos dashboards en YAML.
+*   **Détection d'état intelligente** : Ne se base pas simplement sur la puissance instantanée, mais utilise un algorithme (temps + seuil) pour déterminer si la machine est "En marche", "Terminée" ou "Éteinte".
+*   **Calcul du coût précis** : Isole la consommation électrique de **chaque cycle** (pas le total cumulé à vie) et la multiplie par votre coût du kWh.
+*   **Résilience 🛡️** : En cas de redémarrage de Home Assistant *pendant* un lavage, le système reprend exactement là où il en était (temps écoulé, état, coût). Rien n'est perdu.
+*   **Notifications Persistantes** : Une fois le cycle terminé, une notification s'affiche dans HA avec le résumé (Coût, Durée, kWh). Elle reste tant que vous n'avez pas éteint la machine/prise.
+*   **Aucun Polling** : 100% événementiel. Charge système nulle quand les machines ne tournent pas.
 
 ---
 
-## 3. Pré-requis (Coût)
+## 📂 Modules Disponibles
 
-Assurez-vous d'avoir l'entité pour le prix du kWh (déjà présente si vous utilisez le dashboard PrisTVChambX3) :
-*   `input_number.cout_du_kwh`
+Chaque appareil possède son propre dossier avec sa documentation détaillée et ses fichiers de configuration.
+
+### 🧺 [Gestion du Lave-Linge](./lave_linge/)
+*   **Dossier** : [`lave_linge/`](./lave_linge/)
+*   **Fonction** : Suivi du cycle de lavage.
+*   **Entités** : `lave_linge_*`
+
+### 🍽️ [Gestion du Lave-Vaisselle](./lave_vaisselle/)
+*   **Dossier** : [`lave_vaisselle/`](./lave_vaisselle/)
+*   **Fonction** : Suivi du cycle de lavage.
+*   **Entités** : `lave_vaisselle_*`
+
+---
+
+## 🚀 Installation : Deux Philosophies
+
+Pour chaque module, nous proposons deux méthodes d'installation selon votre niveau et vos préférences :
+
+1.  **Le Package (Recommandé) ✨** :
+    *   Un seul fichier YAML (`*_package.yaml`) à déposer dans votre dossier `packages/`.
+    *   Tout est inclus (Helpers, Sensors, Automation).
+    *   C'est la méthode la plus simple et la plus portable.
+
+2.  **L'Installation Manuelle (À la carte) 🛠️** :
+    *   Pour ceux qui préfèrent séparer leurs fichiers (`sensors/`, `automations/`, etc.).
+    *   Possibilité de créer les Helpers (Entrées) via l'interface graphique (UI) de Home Assistant.
+    *   Automatisation simplifiée disponible (`*_automation_simple.yaml`) sans dépendances externes.
+
+---
+
+## 📋 Pré-requis Généraux
+
+*   Une **prise connectée** avec mesure de consommation (Puissance W & Energie kWh) pour chaque appareil.
+*   Avoir configuré le `packages: !include_dir_named packages` dans votre `configuration.yaml` (si méthode Package).
+*   Définir votre **Coût du kWh** dans l'entité commune `input_number.cout_du_kwh` (incluse dans les packages).
+

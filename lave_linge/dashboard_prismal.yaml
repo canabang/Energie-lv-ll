@@ -9,8 +9,7 @@ cards:
   - type: horizontal-stack
     cards:
       - type: custom:mushroom-title-card
-        title: ⚡ PrisMal
-      #  subtitle: A1Z - Chambre
+        title: ⚡ Lave Linge
       - type: custom:mushroom-entity-card
         entity: sensor.prismal_energy
         primary_info: state

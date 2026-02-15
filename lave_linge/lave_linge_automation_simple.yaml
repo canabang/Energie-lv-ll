@@ -91,7 +91,6 @@ actions:
                   Conso : {{ states('sensor.compteur_lave_linge_cycle') }} kWh
                   Coût : {{ states('sensor.lave_linge_cout_cycle') }} €
                 title: "🧺 Lave-Linge Terminé"
-                notification_id: "lave_linge_fin"
 
             - delay:
                 hours: 0

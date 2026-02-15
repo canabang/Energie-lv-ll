@@ -91,7 +91,6 @@ actions:
                   Conso : {{ states('sensor.compteur_lave_vaisselle_cycle') }} kWh
                   Coût : {{ states('sensor.lave_vaisselle_cout_cycle') }} €
                 title: "🍽️ Lave-Vaisselle Terminé"
-                notification_id: "lave_vaisselle_fin"
 
             - delay:
                 hours: 0

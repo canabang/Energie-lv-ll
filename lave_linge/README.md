@@ -101,6 +101,12 @@ Vous avez deux méthodes pour installer cette configuration.
 4.  **Redémarrez Home Assistant**.
 5.  **Configuration Finale** : Une fois redémarré, allez dans *Paramètres > Entrées*, trouvez `Coût du kWh` et définissez votre prix.
 
+> **💡 Note pour l'édition de l'automatisation** :
+> Les automatisations définies dans un package (YAML) sont en lecture seule. Pour les rendre éditables :
+> 1. Ouvrez l'automatisation dans l'interface : un bandeau en haut vous proposera de la **Migrer**. Cliquez dessus.
+> 2. Cela créera une copie éditable (dans `automations.yaml`).
+> 3. **IMPORTANT** : Une fois fait, retournez dans le fichier `lave_linge_package.yaml` et commentez (ou supprimez) toute la section `automation:` pour éviter qu'elle ne s'exécute en double et redémarrez Home Assistant!
+
 ### Méthode 2 : L'Installation "À la carte" (Manuelle) 🛠️
 *Si vous préférez séparer vos fichiers (`!include`) ou utiliser l'interface graphique.*
 

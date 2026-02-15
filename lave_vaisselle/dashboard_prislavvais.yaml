@@ -9,8 +9,7 @@ cards:
   - type: horizontal-stack
     cards:
       - type: custom:mushroom-title-card
-        title: ⚡ PrisLavVais
-      #  subtitle: A1Z - Cuisine
+        title: ⚡ Lave Vaisselle
       - type: custom:mushroom-entity-card
         entity: sensor.prislavvais_energy
         primary_info: state
