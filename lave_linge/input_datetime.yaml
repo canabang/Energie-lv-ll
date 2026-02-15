@@ -1,0 +1,10 @@
+# [HELPER] Horodatage Début/Fin
+debut_machine:
+  name: "Lave Linge - Début"
+  has_date: true
+  has_time: true
+
+fin_machine:
+  name: "Lave Linge - Fin"
+  has_date: true
+  has_time: true

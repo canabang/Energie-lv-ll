@@ -1,0 +1,6 @@
+# [HELPER] Compteur de Cycle
+compteur_prismal_cycle:
+  # [CONFIG] Remplacez 'sensor.prismal_energy' par votre capteur de consommation totale (kWh)
+  source: sensor.prismal_energy
+  name: "Compteur PrisMal Cycle"
+  cycle: never  # Remise à zéro manuelle par l'automatisation

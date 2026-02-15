@@ -1,0 +1,8 @@
+# [HELPER] État de la Machine
+etat_lave_vaisselle:
+  name: "Lave Vaisselle - État"
+  options:
+    - Éteint
+    - En marche
+    - Terminé
+  icon: mdi:dishwasher

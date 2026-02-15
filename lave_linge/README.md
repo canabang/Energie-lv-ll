@@ -66,8 +66,8 @@ Ce système repose sur plusieurs briques qui travaillent ensemble :
     *   **Utility Meter** pour calculer la consommation par cycle.
     *   **Template Sensors** pour calculer la durée, le coût et détecter l'état.
     *   **Automation** pour gérer le cycle et envoyer les notifications.
-*   **`lave_linge_automation.yaml`** : **Pour la Méthode 2 (Manuelle).** Contient l'automatisation seule.
-*   **`lave_linge_templates.yaml`** : **Pour la Méthode 2 (Manuelle).** Contient les capteurs seuls.
+*   **`lave_linge_automation.yaml`** : Automation seule (pour Copier-Coller UI).
+*   **`templates.yaml`**, **`input_select.yaml`**, **`input_datetime.yaml`**, **`utility_meter.yaml`** : Fichiers découpés pour l'intégration `!include`.
 *   **`dashboard_prismal.yaml`** : Code YAML de la carte Lovelace (Dashboard) associée.
 
 ## � Interface (Dashboard)
@@ -103,11 +103,20 @@ Vous avez deux méthodes pour installer cette configuration.
 ### Méthode 2 : L'Installation "À la carte" (Manuelle) 🛠️
 *Si vous préférez séparer vos fichiers ou utiliser l'interface graphique.*
 
-1.  **Entrées (Helpers)** : Créez manuellement via l'interface (Paramètres > Appareils et services > Entrées) :
-    *   `input_select.etat_lave_linge` (Options : Éteint, En marche, Terminé)
-    *   `input_datetime.debut_machine` (Date et heure)
-    *   `input_datetime.fin_machine` (Date et heure)
-    *   `utility_meter.compteur_prismal_cycle` (Source : votre capteur énergie, Cycle : pas de remise à zéro automatique, adaptez le nom selon votre appareil)
-2.  **Sensors** : Copiez le contenu de **`lave_linge_templates.yaml`** dans votre fichier `templates.yaml` (ou dossier `templates/`).
-3.  **Automation** : Copiez le contenu de **`lave_linge_automation.yaml`** dans votre fichier `automations.yaml` (ou créez une nouvelle automatisation via l'UI en mode YAML).
+### Méthode 2 : L'Installation "À la carte" (Manuelle) 🛠️
+*Pour ceux qui utilisent des fichiers séparés (`!include`).*
+
+1.  **Entrées (Helpers) : VIA FICHIERS YAML**
+    *   Copiez le contenu de **`input_select.yaml`** dans votre fichier `input_select.yaml`.
+    *   Copiez le contenu de **`input_datetime.yaml`** dans votre fichier `input_datetime.yaml`.
+    *   Copiez le contenu de **`utility_meter.yaml`** dans votre fichier `utility_meter.yaml`.
+
+2.  **Sensors : VIA FICHIER YAML**
+    *   Copiez le contenu de **`templates.yaml`** dans votre fichier `templates.yaml` (ou votre dossier `templates/`).
+
+3.  **Automation : VIA L'INTERFACE (UI) (Recommandé)**
+    *   Créez une nouvelle automatisation vide via l'UI.
+    *   Passez en mode YAML.
+    *   Copiez-collez le contenu de **`lave_linge_automation.yaml`**.
+    *   Enregistrez.
 4.  N'oubliez pas d'adapter les entités dans chaque fichier !

@@ -1,0 +1,10 @@
+# [HELPER] Horodatage Début/Fin
+debut_lave_vaisselle:
+  name: "Lave Vaisselle - Début"
+  has_date: true
+  has_time: true
+
+fin_lave_vaisselle:
+  name: "Lave Vaisselle - Fin"
+  has_date: true
+  has_time: true

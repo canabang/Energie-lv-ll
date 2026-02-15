@@ -40,8 +40,8 @@ Cette automatisation est **légère, robuste et silencieuse** (identique à cell
 ## 📂 Contenu du dossier
 
 *   **`lave_vaisselle_package.yaml`** : **Pour la Méthode 1 (Package).** Le fichier tout-en-un recommandé.
-*   **`lave_vaisselle_automation.yaml`** : **Pour la Méthode 2 (Manuelle).** Contient l'automatisation seule.
-*   **`lave_vaisselle_templates.yaml`** : **Pour la Méthode 2 (Manuelle).** Contient les capteurs seuls.
+*   **`lave_vaisselle_automation.yaml`** : Automation seule (pour Copier-Coller UI).
+*   **`templates.yaml`**, **`input_select.yaml`**, **`input_datetime.yaml`**, **`utility_meter.yaml`** : Fichiers découpés pour l'intégration `!include`.
 *   **`dashboard_prislavvais.yaml`** : Code YAML de la carte Lovelace (Dashboard) associée.
 
 ## 🚀 Installation & Utilisation
@@ -52,9 +52,21 @@ Cette automatisation est **légère, robuste et silencieuse** (identique à cell
 3.  Redémarrez HA.
 
 ### Méthode 2 : L'Installation "À la carte" (Manuelle) 🛠️
-1.  **Entrées (Helpers)** : Créez `input_select.etat_lave_vaisselle`, `input_datetime` (debut/fin), `utility_meter` via l'UI.
-2.  **Sensors** : Copiez le contenu de `lave_vaisselle_templates.yaml` dans votre config.
-3.  **Automation** : Copiez le contenu de `lave_vaisselle_automation.yaml`.
+*Pour ceux qui utilisent des fichiers séparés (`!include`).*
+
+1.  **Entrées (Helpers) : VIA FICHIERS YAML**
+    *   Copiez le contenu de **`input_select.yaml`** dans votre fichier `input_select.yaml`.
+    *   Copiez le contenu de **`input_datetime.yaml`** dans votre fichier `input_datetime.yaml`.
+    *   Copiez le contenu de **`utility_meter.yaml`** dans votre fichier `utility_meter.yaml`.
+
+2.  **Sensors : VIA FICHIER YAML**
+    *   Copiez le contenu de **`templates.yaml`** dans votre fichier `templates.yaml` (ou votre dossier `templates/`).
+
+3.  **Automation : VIA L'INTERFACE (UI) (Recommandé)**
+    *   Créez une nouvelle automatisation vide via l'UI.
+    *   Passez en mode YAML.
+    *   Copiez-collez le contenu de **`lave_vaisselle_automation.yaml`**.
+    *   Enregistrez.
 
 ## 📱 Interface (Dashboard)
 

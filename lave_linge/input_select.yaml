@@ -1,0 +1,8 @@
+# [HELPER] État de la Machine
+etat_lave_linge:
+  name: "Lave Linge - État"
+  options:
+    - Éteint
+    - En marche
+    - Terminé
+  icon: mdi:washing-machine
