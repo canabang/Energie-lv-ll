@@ -94,6 +94,52 @@ actions:
     then:
       - repeat:
           sequence:
+            # A. Génération Message (Fraîcheur des données)
+            - action: script.k_2so_generateur_de_message
+              data:
+                mission: lave vaisselle fini
+                consigne: |
+                  Annonce la fin du cycle de lavage de la vaisselle.
+                  Consommation : {{ states('sensor.compteur_prislavvais_cycle') }} kWh.
+                  Durée : {{ states('sensor.lave_vaisselle_duree_cycle') }}.
+                  Coût : {{ states('sensor.lave_vaisselle_cout_cycle') }} €.
+                  Ton : Serviable mais pressant.
+              response_variable: generated_message
+            
+            # B. Notifications
+            - action: script.notification_alexa
+              data:
+                message: "{{ generated_message.data }}"
+            
+            - action: script.awtrix_dynamique_customapp_and_notify
+              data:
+                icone: dishwasher
+                rainbow: "true"
+                scrollspeed: "50"
+                color: "#2e8b57"
+                duree: "25"
+                message: "Lave-Vaisselle Fin | {{ generated_message.data }}"
+            
+            - action: script.notification_discord
+              metadata: {}
+              data:
+                nom: à remplacer
+                description: >-
+                  {{ generated_message.data }}
+
+                  Consommation : {{ states('sensor.compteur_prislavvais_cycle') }} kWh. 
+                  Durée : {{ states('sensor.lave_vaisselle_duree_cycle') }}.
+                  Coût : {{ states('sensor.lave_vaisselle_cout_cycle') }} €.
+                image_url: https://i.ibb.co/pRvFCBy/home-assistant.png
+            
+            # C. Wait 5 minutes
+            - delay:
+                hours: 0
+                minutes: 5
+                seconds: 0
+                milliseconds: 0
+
+            # D. Persistent Notification (Optionnel, pour garder une trace)
             - action: persistent_notification.create
               data:
                 message: |
@@ -103,13 +149,6 @@ actions:
                   Coût : {{ states('sensor.lave_vaisselle_cout_cycle') }} €
                 title: "🍽️ Lave-Vaisselle Terminé"
                 notification_id: "lave_vaisselle_fin"
-
-            # C. Wait 5 minutes
-            - delay:
-                hours: 0
-                minutes: 5
-                seconds: 0
-                milliseconds: 0
 
           # CONDITION DE SORTIE : Si la prise est éteinte, on arrête les notifs.
           while:
