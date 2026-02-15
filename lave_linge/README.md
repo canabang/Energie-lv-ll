@@ -43,7 +43,7 @@ Ce système repose sur plusieurs briques qui travaillent ensemble :
     *   **`input_datetime.fin_machine`** : Retient l'heure exacte de la fin.
 
 3.  **Le Compteur (`utility_meter`)** :
-    *   **Nom** : `sensor.compteur_prismal_cycle`
+    *   **Nom** : `sensor.compteur_lave_linge_cycle`
     *   Il isole la consommation électrique (kWh) du cycle en cours.
     *   Il est remis à zéro automatiquement au début de chaque lavage.
 
@@ -66,7 +66,7 @@ Ce système repose sur plusieurs briques qui travaillent ensemble :
     *   **Utility Meter** pour calculer la consommation par cycle.
     *   **Template Sensors** pour calculer la durée, le coût et détecter l'état.
     *   **Automation** pour gérer le cycle et envoyer les notifications.
-*   **`lave_linge_automation.yaml`** : Automation seule (pour Copier-Coller UI).
+*   **`lave_linge_automation_simple.yaml`** : Automation seule simplifiée (pour Copier-Coller UI).
 *   **`templates.yaml`**, **`input_select.yaml`**, **`input_datetime.yaml`**, **`utility_meter.yaml`**, **`input_number.yaml`** : Fichiers découpés pour l'intégration `!include`.
 *   **`dashboard_prismal.yaml`** : Code YAML de la carte Lovelace (Dashboard) associée.
 
@@ -114,7 +114,7 @@ Vous avez deux méthodes pour installer cette configuration.
         *   **`input_datetime.debut_machine`** : Date et/ou heure (Date + Heure).
         *   **`input_datetime.fin_machine`** : Date et/ou heure (Date + Heure).
         *   **`input_number.cout_du_kwh`** : Nombre (Boîte de saisie).
-        *   **`utility_meter.compteur_prismal_cycle`** : Compteur (Pas de cycle).
+        *   **`utility_meter.compteur_lave_linge_cycle`** : Compteur (Pas de cycle).
     *   **⚠️ IMPORTANT** : Quelque soit la méthode, n'oubliez pas de définir votre coût du kWh dans `input_number.cout_du_kwh` !
 
 2.  **Sensors : VIA FICHIER YAML**
@@ -123,6 +123,6 @@ Vous avez deux méthodes pour installer cette configuration.
 3.  **Automation : VIA L'INTERFACE (UI) (Recommandé)**
     *   Créez une nouvelle automatisation vide via l'UI.
     *   Passez en mode YAML.
-    *   Copiez-collez le contenu de **`lave_linge_automation.yaml`**.
+    *   Copiez-collez le contenu de **`lave_linge_automation_simple.yaml`**.
     *   Enregistrez.
 4.  N'oubliez pas d'adapter les entités dans chaque fichier !

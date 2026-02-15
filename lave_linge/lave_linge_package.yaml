@@ -56,10 +56,10 @@ utility_meter:
   # [HELPER] Compteur de Cycle
   # Isole la consommation du cycle courant.
   # Il est remis à zéro automatiquement au début de chaque nouveau cycle (via l'automatisation).
-  compteur_prismal_cycle:
+  compteur_lave_linge_cycle:
     # [A_CHANGER] Remplacez 'sensor.prismal_energy' par votre capteur de consommation totale (kWh)
     source: sensor.prismal_energy
-    name: "Compteur PrisMal Cycle"
+    name: "Lave Linge Energie Cycle"
     # cycle: never # Pas de cycle automatique (reset manuel via automation)
 
 # 3. TEMPLATE SENSORS
@@ -132,7 +132,7 @@ template:
         icon: mdi:cash
         unit_of_measurement: "€"
         state: >
-          {% set energie = states('sensor.compteur_prismal_cycle') | float(0) %}
+          {% set energie = states('sensor.compteur_lave_linge_cycle') | float(0) %}
           # [A_CHANGER] Remplacez 'input_number.cout_du_kwh' par votre entité de coût unitaire
           {% set prix = states('input_number.cout_du_kwh') | float(0) %}
           {{ (energie * prix) | round(2) }}
@@ -171,7 +171,7 @@ automation:
             sequence:
               - action: utility_meter.reset
                 target:
-                  entity_id: sensor.compteur_prismal_cycle
+                  entity_id: sensor.compteur_lave_linge_cycle
               - action: input_select.select_option
                 target:
                   entity_id: input_select.etat_lave_linge
@@ -233,7 +233,7 @@ automation:
                     message: |
                       Cycle terminé.
                       Durée : {{ states('sensor.lave_linge_duree_cycle') }}
-                      Conso : {{ states('sensor.compteur_prismal_cycle') }} kWh
+                      Conso : {{ states('sensor.compteur_lave_linge_cycle') }} kWh
                       Coût : {{ states('sensor.lave_linge_cout_cycle') }} €
                     title: "🧺 Lave-Linge Terminé"
                     notification_id: "lave_linge_fin"

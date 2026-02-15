@@ -36,7 +36,7 @@ Cette automatisation est **légère, robuste et silencieuse** (identique à cell
     *   **`input_datetime.fin_lave_vaisselle`** : Mémorise l'heure de fin.
 
 3.  **Utility Meter** :
-    *   **Nom** : `sensor.compteur_prislavvais_cycle`
+    *   **Nom** : `sensor.compteur_lave_vaisselle_cycle`
     *   **Rôle** : Compte les kWh consommés uniquement pendant le cycle en cours. Il est remis à zéro automatiquement au début de chaque lavage.
 
 4.  **Template Sensors** :
@@ -54,7 +54,7 @@ Cette automatisation est **légère, robuste et silencieuse** (identique à cell
 ## 📂 Contenu du dossier
 
 *   **`lave_vaisselle_package.yaml`** : **Pour la Méthode 1 (Package).** Le fichier tout-en-un recommandé.
-*   **`lave_vaisselle_automation.yaml`** : Automation seule (pour Copier-Coller UI).
+*   **`lave_vaisselle_automation_simple.yaml`** : Automation seule simplifiée (pour Copier-Coller UI).
 *   **`templates.yaml`**, **`input_select.yaml`**, **`input_datetime.yaml`**, **`utility_meter.yaml`**, **`input_number.yaml`** : Fichiers découpés pour l'intégration `!include`.
 *   **`dashboard_prislavvais.yaml`** : Code YAML de la carte Lovelace (Dashboard) associée.
 
@@ -76,7 +76,7 @@ Cette automatisation est **légère, robuste et silencieuse** (identique à cell
         *   **`input_datetime.debut_lave_vaisselle`** : Date et/ou heure (Date + Heure).
         *   **`input_datetime.fin_lave_vaisselle`** : Date et/ou heure (Date + Heure).
         *   **`input_number.cout_du_kwh`** : Nombre (Boîte de saisie).
-        *   **`utility_meter.compteur_prislavvais_cycle`** : Compteur (Pas de cycle).
+        *   **`utility_meter.compteur_lave_vaisselle_cycle`** : Compteur (Pas de cycle).
     *   **⚠️ IMPORTANT** : Quelque soit la méthode, n'oubliez pas de définir votre coût du kWh dans `input_number.cout_du_kwh` !
 
 2.  **Sensors : VIA FICHIER YAML**
@@ -85,7 +85,7 @@ Cette automatisation est **légère, robuste et silencieuse** (identique à cell
 3.  **Automation : VIA L'INTERFACE (UI) (Recommandé)**
     *   Créez une nouvelle automatisation vide via l'UI.
     *   Passez en mode YAML.
-    *   Copiez-collez le contenu de **`lave_vaisselle_automation.yaml`**.
+    *   Copiez-collez le contenu de **`lave_vaisselle_automation_simple.yaml`**.
     *   Enregistrez.
 
 ## 📱 Interface (Dashboard)

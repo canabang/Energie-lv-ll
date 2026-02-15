@@ -71,7 +71,7 @@
       icon: mdi:cash
       unit_of_measurement: "€"
       state: >
-        {% set energie = states('sensor.compteur_prismal_cycle') | float(0) %}
+        {% set energie = states('sensor.compteur_lave_linge_cycle') | float(0) %}
         # [CONFIG] Remplacez par votre entité de coût du kWh
         {% set prix = states('input_number.cout_du_kwh') | float(0) %}
         {{ (energie * prix) | round(2) }}

@@ -95,7 +95,7 @@ cards:
         icon: mdi:clock-outline
       
       - type: template
-        entity: sensor.compteur_prislavvais_cycle
+        entity: sensor.compteur_lave_vaisselle_cycle
         content: "{{ states('sensor.compteur_prislavvais_cycle') }} kWh"
         icon: mdi:flash-outline
     alignment: center

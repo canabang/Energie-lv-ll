@@ -1,6 +1,6 @@
 # [HELPER] Compteur de Cycle
-compteur_prismal_cycle:
+compteur_lave_linge_cycle:
   # [CONFIG] Remplacez 'sensor.prismal_energy' par votre capteur de consommation totale (kWh)
   source: sensor.prismal_energy
-  name: "Compteur PrisMal Cycle"
+  name: "Lave Linge Energie Cycle"
   # cycle: never # Option invalide en YAML. Laisser vide = Pas de cycle automatique.
