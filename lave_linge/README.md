@@ -111,7 +111,9 @@ Vous avez deux méthodes pour installer cette configuration.
         *   **`input_datetime.debut_machine`** : Date et/ou heure (Date + Heure).
         *   **`input_datetime.fin_machine`** : Date et/ou heure (Date + Heure).
         *   **`input_number.cout_du_kwh`** : Nombre (Boîte de saisie).
-        *   **`utility_meter.compteur_lave_linge_cycle`** : Compteur (Pas de cycle).
+        *   **`utility_meter.compteur_lave_linge_cycle`** : Compteur de services publics.
+            *   **Source** : Votre capteur de consommation (kWh).
+            *   **Cycle** : Pas de cycle.
     *   **⚠️ IMPORTANT** : Quelque soit la méthode, n'oubliez pas de définir votre coût du kWh dans `input_number.cout_du_kwh` !
 
 2.  **Sensors : VIA FICHIER YAML**
