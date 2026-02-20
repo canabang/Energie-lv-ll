@@ -149,17 +149,17 @@ automation:
         entity_id: binary_sensor.lave_linge_en_marche
         from: "off"
         to: "on"
-        id: "demarrage"
+        id: demarrage
       # 2. FIN : Quand la puissance repasse sous le seuil
       - trigger: state
         entity_id: binary_sensor.lave_linge_en_marche
         from: "on"
         to: "off"
-        id: "fin"
+        id: fin
       # 3. REDÉMARRAGE HA : Pour relancer la boucle de notification si le cycle était "Terminé"
       - trigger: homeassistant
         event: start
-        id: "redemarrage"
+        id: redemarrage
     conditions: []
     actions:
       - choose:
@@ -167,7 +167,7 @@ automation:
           # On initialise tout : Reset compteur kWh, État=En marche, Heure de début.
           - conditions:
               - condition: trigger
-                id: "demarrage"
+                id: demarrage
             sequence:
               - action: utility_meter.reset
                 target:
@@ -176,7 +176,7 @@ automation:
                 target:
                   entity_id: input_select.etat_lave_linge
                 data:
-                  option: "En marche"
+                  option: En marche
               - action: input_datetime.set_datetime
                 target:
                   entity_id: input_datetime.debut_machine
@@ -184,19 +184,19 @@ automation:
                   datetime: "{{ now() }}"
               - action: script.notification_alexa
                 data:
-                  message: "La machine à laver est lancée."
+                  message: La machine à laver est lancée.
 
           # CAS B : FIN DU CYCLE
           # On valide la fin : État=Terminé, Heure de fin.
           - conditions:
               - condition: trigger
-                id: "fin"
+                id: fin
             sequence:
               - action: input_select.select_option
                 target:
                   entity_id: input_select.etat_lave_linge
                 data:
-                  option: "Terminé"
+                  option: Terminé
               - action: input_datetime.set_datetime
                 target:
                   entity_id: input_datetime.fin_machine
@@ -207,10 +207,10 @@ automation:
           # Sécurité : On attend que les entités soient prêtes pour éviter les erreurs de lecture.
           - conditions:
               - condition: trigger
-                id: "redemarrage"
+                id: redemarrage
             sequence:
                # On attend que les entités soient disponibles
-              - wait_template: >-
+              - wait_template: |-
                   {{ has_value('input_select.etat_lave_linge') and 
                      has_value('switch.prismal') }} # [A_CHANGER] Remplacez par votre prise connectée
                 timeout: "00:05:00"
@@ -220,7 +220,7 @@ automation:
       - if:
           - condition: state
             entity_id: input_select.etat_lave_linge
-            state: "Terminé"
+            state: Terminé
           - condition: state
             # [A_CHANGER] Remplacez par votre prise connectée
             entity_id: switch.prismal
@@ -232,11 +232,11 @@ automation:
                   data:
                     message: |
                       Cycle terminé.
-                      Durée : {{ states('sensor.lave_linge_duree_cycle') }}
-                      Conso : {{ states('sensor.compteur_lave_linge_cycle') }} kWh
-                      Coût : {{ states('sensor.lave_linge_cout_cycle') }} €
-                    title: "🧺 Lave-Linge Terminé"
-                    notification_id: "lave_linge_fin"
+                      ⏱️ Durée : {{ states('sensor.lave_linge_duree_cycle') }}
+                      ⚡ Conso : {{ states('sensor.compteur_lave_linge_cycle') }} kWh
+                      💶 Coût : {{ states('sensor.lave_linge_cout_cycle') }} €
+                    title: 🧺 Lave-Linge Terminé
+                    notification_id: lave_linge_fin
 
                 - delay:
                     hours: 0

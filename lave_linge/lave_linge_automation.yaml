@@ -7,22 +7,20 @@ triggers:
     entity_id: binary_sensor.lave_linge_en_marche
     from: "off"
     to: "on"
-    id: "demarrage"
-
+    id: demarrage
+  
   # 2. FIN : La puissance repasse sous le seuil (cycle fini)
   - trigger: state
     entity_id: binary_sensor.lave_linge_en_marche
     from: "on"
     to: "off"
-    id: "fin"
+    id: fin
 
   # 3. REDÉMARRAGE HA : Sécurité pour relancer la boucle si le cycle était "Terminé"
   - trigger: homeassistant
     event: start
-    id: "redemarrage"
-
+    id: redemarrage
 conditions: []
-
 actions:
   # ---------------------------------------------------------
   # 1. INITIALISATION SELON LE DÉCLENCHEUR
@@ -32,7 +30,7 @@ actions:
       # On initialise : Reset du compteur kWh, passage à "En marche", mémorisation de l'heure.
       - conditions:
           - condition: trigger
-            id: "demarrage"
+            id: demarrage
         sequence:
           - action: utility_meter.reset
             target:
@@ -41,7 +39,7 @@ actions:
             target:
               entity_id: input_select.etat_lave_linge
             data:
-              option: "En marche"
+              option: En marche
           - action: input_datetime.set_datetime
             target:
               entity_id: input_datetime.debut_machine
@@ -49,47 +47,44 @@ actions:
               datetime: "{{ now() }}"
           - action: script.notification_alexa
             data:
-              message: "La machine à laver est lancée."
-
+              message: La machine à laver est lancée.
       # CAS B : FIN DU CYCLE
       # On valide la fin : Passage à "Terminé", mémorisation de l'heure de fin.
       - conditions:
           - condition: trigger
-            id: "fin"
+            id: fin
         sequence:
           - action: input_select.select_option
             target:
               entity_id: input_select.etat_lave_linge
             data:
-              option: "Terminé"
+              option: Terminé
           - action: input_datetime.set_datetime
             target:
               entity_id: input_datetime.fin_machine
             data:
               datetime: "{{ now() }}"
-
       # CAS C : REDÉMARRAGE HA
       # On attend que les entités soient prêtes avant de continuer.
       - conditions:
           - condition: trigger
-            id: "redemarrage"
+            id: redemarrage
         sequence:
           # On attend que les entités soient disponibles (plus d'inconnu/indisponible)
-          - wait_template: >-
+          - wait_template: |-
               {{ has_value('input_select.etat_lave_linge') and 
                  has_value('switch.prismal') }} # [CONFIG] Votre prise connectée
             timeout: "00:05:00"
             continue_on_timeout: false
-
   # ---------------------------------------------------------
   # 2. BOUCLE DE NOTIFICATION (COMMUNE)
   # ---------------------------------------------------------
   - if:
       - condition: state
         entity_id: input_select.etat_lave_linge
-        state: "Terminé"
+        state: Terminé
       - condition: state
-        entity_id: switch.prismal # [CONFIG] Votre prise connectée
+        entity_id: switch.prismal
         state: "on"
     then:
       - repeat:
@@ -98,11 +93,16 @@ actions:
             - action: script.k_2so_generateur_de_message
               data:
                 mission: machine à laver finie
-                consigne: |
+                consigne: >
                   Annonce la fin du cycle.
-                  Consommation : {{ states('sensor.compteur_prismal_cycle') }} kWh.
+
+                  Consommation : {{ states('sensor.compteur_prismal_cycle') }}
+                  kWh.
+
                   Durée : {{ states('sensor.lave_linge_duree_cycle') }}.
+
                   Coût : {{ states('sensor.lave_linge_cout_cycle') }} €.
+
                   Ton : Serviable mais pressant.
               response_variable: generated_message
             
@@ -110,7 +110,6 @@ actions:
             - action: script.notification_alexa
               data:
                 message: "{{ generated_message.data }}"
-            
             - action: script.awtrix_dynamique_customapp_and_notify
               data:
                 icone: mal
@@ -118,25 +117,28 @@ actions:
                 scrollspeed: "50"
                 color: "#2e8b57"
                 duree: "25"
-                message: "Lave-Linge Fin | {{ generated_message.data }}"
-            
+                message: Lave-Linge Fin | {{ generated_message.data }}
             - action: script.notification_discord
               metadata: {}
               data:
-                nom: à remplacer
+                nom: 🧺 Lave-Linge Terminé
                 description: >-
                   {{ generated_message.data }}
 
-                  Consommation : {{ states('sensor.compteur_prismal_cycle') }} kWh. 
-                  Durée : {{ states('sensor.lave_linge_duree_cycle') }}.
-                  Coût : {{ states('sensor.lave_linge_cout_cycle') }} €.
+                  ⚡ Consommation : {{ states('sensor.compteur_prismal_cycle') }}
+                  kWh.  ⏱️ Durée : {{ states('sensor.lave_linge_duree_cycle')
+                  }}. 💶 Coût : {{ states('sensor.lave_linge_cout_cycle') }} €.
                 image_url: https://i.ibb.co/pRvFCBy/home-assistant.png
-            - delay:
-                hours: 0
-                minutes: 5
-                seconds: 0
-                milliseconds: 0
-
+            - action: persistent_notification.create
+              data:
+                message: |
+                  Cycle terminé : {{ generated_message.data }}
+                  ⏱️ Durée : {{ states('sensor.lave_linge_duree_cycle') }}
+                  ⚡ Conso : {{ states('sensor.compteur_prismal_cycle') }} kWh
+                  💶 Coût : {{ states('sensor.lave_linge_cout_cycle') }} €
+                title: 🧺 Lave-Linge Terminé
+                notification_id: lave_linge_fin
+                
             # C. Wait 5 minutes
             - delay:
                 hours: 0
@@ -147,5 +149,5 @@ actions:
           # CONDITION DE SORTIE : Si la prise est éteinte, on arrête les notifs.
           while:
             - condition: state
-              entity_id: switch.prismal # [CONFIG] Votre prise connectée
+              entity_id: switch.prismal
               state: "on"
