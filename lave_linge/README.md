@@ -68,7 +68,8 @@ Ce système repose sur plusieurs briques qui travaillent ensemble :
     *   **Automation** pour gérer le cycle et envoyer les notifications.
 *   **`lave_linge_automation_simple.yaml`** : Automation seule simplifiée (pour Copier-Coller UI).
 *   **`templates.yaml`**, **`input_select.yaml`**, **`input_datetime.yaml`**, **`utility_meter.yaml`**, **`input_number.yaml`** : Fichiers découpés pour l'intégration `!include`.
-*   **`dashboard_prismal.yaml`** : Code YAML de la carte Lovelace (Dashboard) associée.
+*   **`dashboard_prismal.yaml`** : Code YAML de la carte Lovelace (Dashboard) (Standard).
+*   **`carte_lave_linge_streamline.yaml`** : Code YAML de la carte (Format Streamline).
 
 ## � Interface (Dashboard)
 
@@ -76,7 +77,9 @@ Voici à quoi ressemble la carte une fois installée :
 
 ![Aperçu de la carte](carte%20lave%20linge.png)
 
-Le code complet de cette carte se trouve dans le fichier **`dashboard_prismal.yaml`**.
+Le code complet de ces cartes se trouve dans :
+*   Le fichier **`dashboard_prismal.yaml`** (Format Standard avec graphiques).
+*   Le fichier **`carte_lave_linge_streamline.yaml`** (Format épuré et compact "Streamline").
 *   **Compatible avec les deux méthodes** : Que vous utilisiez le Package ou l'installation Manuelle, les entités ont les mêmes noms.
 *   **Fonctionnalités** :
     *   État en temps réel + animation (icône qui tourne si en marche).

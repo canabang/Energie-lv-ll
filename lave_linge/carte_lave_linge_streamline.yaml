@@ -1,0 +1,110 @@
+type: custom:mod-card
+card_mod:
+  style: |
+    ha-card {
+      background: transparent !important;
+      backdrop-filter: none !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+      border-radius: 20px !important;
+      transition: all 0.3s ease !important;
+      overflow: hidden;
+      padding: 0px 10px !important; /* Ajoute un peu de marge sur les bords */
+    }
+    ha-card:hover {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3) !important;
+    }
+card:
+  type: horizontal-stack
+  cards:
+    # --- COLONNE DE GAUCHE : LAVE LINGE ET STATUT ---
+    - type: custom:mushroom-template-card
+      primary: Lave Linge
+      secondary: >-
+        {% set etat_prise = states('switch.prismal') %}
+        {% set prog = states('sensor.washing_machine_program') %}
+        {% set progress = states('sensor.washing_machine_progress') %}
+        
+        {% if etat_prise == 'on' %}
+          Allumé
+          {%- if prog not in ['unknown', 'unavailable', 'off'] %} • {{ prog }}{% endif -%}
+          {%- if progress not in ['unknown', 'unavailable', '0.0', '0'] %} • {{ progress }}{% endif -%}
+        {% else %}
+          Éteint
+        {% endif %}
+      icon: mdi:washing-machine
+      entity: switch.prismal
+      icon_color: >-
+        {{ '#2E8B57' if is_state('switch.prismal', 'on') else 'grey' }}
+      tap_action:
+        action: toggle
+      card_mod:
+        style: |
+          ha-card {
+            border: none !important;
+            box-shadow: none !important;
+            background: none !important;
+            --ha-card-border-width: 0px !important;
+          }
+          {% if states('sensor.prismal_power') | float(0) > 5 %}
+          mushroom-shape-icon {
+            position: relative !important;
+            display: flex;
+          }
+          mushroom-shape-icon::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent 0%, transparent 40%, rgba(46, 139, 87, 0.9) 100%);
+            animation: spin-aura 1.5s linear infinite;
+            z-index: 0;
+          }
+          mushroom-shape-icon::after {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            border-radius: 50%;
+            background: var(--card-background-color, #1c1c1c);
+            z-index: 1;
+          }
+          ha-state-icon {
+            z-index: 2;
+          }
+          @keyframes spin-aura {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          {% endif %}
+
+    # --- COLONNE DE DROITE : LES INFOS DE CONSOMMATION ---
+    - type: custom:mushroom-chips-card
+      alignment: end
+      chips:
+        - type: template
+          entity: sensor.prismal_power
+          content: >-
+            {{ states('sensor.prismal_power') }} W | {{ states('sensor.lave_linge_cout_cycle') }} € | {{ states('input_number.puissance_machine_debut') | float(0) | round(1) }} kWh
+          icon: mdi:flash
+          icon_color: >-
+            {{ 'orange' if is_state('switch.prismal', 'on') else 'grey' }}
+          tap_action:
+            action: more-info
+      card_mod:
+        style: |
+          ha-card {
+            border: none !important;
+            box-shadow: none !important;
+            background: none !important;
+            /* Centre verticalement la puce par rapport à la carte de gauche */
+            display: flex !important;
+            height: 100% !important;
+            align-items: center !important;
+            justify-content: flex-end !important;
+            --chip-background: transparent;
+            --chip-border-width: 0px;
+            margin-right: 5px;
+            /* Optionnel : On réduit un peu la taille de police pour que tout rentre */
+            font-size: 0.9em !important;
+          }
