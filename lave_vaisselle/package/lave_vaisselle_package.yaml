@@ -52,7 +52,7 @@ utility_meter:
   compteur_lave_vaisselle_cycle:
     # [A_CHANGER] Remplacez 'sensor.prislavvais_energy' par votre capteur de consommation totale (kWh)
     source: sensor.prislavvais_energy
-    name: "Lave Vaisselle Energie Cycle"
+    name: "Compteur Lave Vaisselle Cycle"
     # cycle: never # Pas de cycle automatique (reset manuel via automation)
 
 # 3. TEMPLATE SENSORS
@@ -175,9 +175,12 @@ automation:
                   entity_id: input_datetime.debut_lave_vaisselle
                 data:
                   datetime: "{{ now() }}"
-              - action: script.notification_alexa
+              - action: persistent_notification.create
                 data:
                   message: Le lave-vaisselle est lancé.
+                  title: 🍽️ Lave-Vaisselle Démarré
+                  notification_id: >-
+                    lave_vaisselle_start_{{ states('input_datetime.debut_lave_vaisselle') | replace(' ', '_') }}
 
           # CAS B : FIN DU CYCLE
           # On valide la fin : État=Terminé, Heure de fin.
@@ -227,7 +230,8 @@ automation:
                 ⚡ Conso : {{ states('sensor.compteur_lave_vaisselle_cycle') }} kWh
                 💶 Coût : {{ states('sensor.lave_vaisselle_cout_cycle') }} €
               title: 🍽️ Lave-Vaisselle Terminé
-              notification_id: lave_vaisselle_fin
+              notification_id: >-
+                lave_vaisselle_fin_{{ states('input_datetime.debut_lave_vaisselle') | replace(' ', '_') }}
 
           - action: switch.turn_off
             target:

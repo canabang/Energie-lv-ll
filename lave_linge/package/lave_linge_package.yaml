@@ -1,4 +1,4 @@
-# Package : Gestion du Lave-Linge
+# Package : Gestion du Lave-Linge (V4.1)
 # Ce fichier regroupe toute la configuration (Helpers, Sensors, Automation) pour le lave-linge.
 # Pour l'activer, assurez-vous d'avoir ajouté ce dossier à votre configuration "packages".
 # Dans configuration.yaml ajouter :
