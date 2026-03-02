@@ -1,4 +1,4 @@
-# Package : Gestion du Lave-Vaisselle
+# Package : Gestion du Lave-Vaisselle (V4.2)
 # Ce fichier regroupe toute la configuration (Helpers, Sensors, Automation) pour le lave-vaisselle.
 # Pour l'activer, assurez-vous d'avoir ajouté ce dossier à votre configuration "packages".
 
@@ -68,9 +68,9 @@ template:
           minutes: 1
         delay_off:
           minutes: 3
+        # [A_CHANGER] Remplacez 'sensor.prislavvais_power' par votre capteur de puissance (W)
+        # Ajustez le seuil (ici > 5W) selon la veille de votre appareil
         state: >
-          # [A_CHANGER] Remplacez 'sensor.prislavvais_power' par votre capteur de puissance (W)
-          # Ajustez le seuil (ici > 5W) selon la veille de votre appareil
           {{ states('sensor.prislavvais_power')|float(0) > 5 }}
         icon: mdi:dishwasher
 
@@ -124,9 +124,9 @@ template:
         unique_id: lave_vaisselle_cout_cycle
         icon: mdi:cash
         unit_of_measurement: "€"
+        # [A_CHANGER] Remplacez 'input_number.cout_du_kwh' par votre entité de coût unitaire
         state: >
           {% set energie = states('sensor.compteur_lave_vaisselle_cycle') | float(0) %}
-          # [A_CHANGER] Remplacez 'input_number.cout_du_kwh' par votre entité de coût unitaire
           {% set prix = states('input_number.cout_du_kwh') | float(0) %}
           {{ (energie * prix) | round(2) }}
 

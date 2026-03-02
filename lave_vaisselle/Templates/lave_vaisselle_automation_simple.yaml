@@ -1,5 +1,5 @@
 alias: 🍽️ Lave-Vaisselle - Gestion Cycle & Notifications (Simple)
-description: "Gestion du cycle et notification persistante (Version Simple)"
+description: "Gestion du cycle et notification persistante (V4.2 - Version Simple)"
 mode: restart
 triggers:
   - trigger: state
