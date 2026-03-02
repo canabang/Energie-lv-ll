@@ -59,7 +59,7 @@ utility_meter:
   compteur_lave_linge_cycle:
     # [A_CHANGER] Remplacez 'sensor.prismal_energy' par votre capteur de consommation totale (kWh)
     source: sensor.prismal_energy
-    name: "Lave Linge Energie Cycle"
+    name: "Compteur Lave Linge Cycle"
     # cycle: never # Pas de cycle automatique (reset manuel via automation)
 
 # 3. TEMPLATE SENSORS
@@ -182,9 +182,12 @@ automation:
                   entity_id: input_datetime.debut_machine
                 data:
                   datetime: "{{ now() }}"
-              - action: script.notification_alexa
+              - action: persistent_notification.create
                 data:
                   message: La machine à laver est lancée.
+                  title: 🧺 Lave-Linge Démarré
+                  notification_id: >-
+                    lave_linge_start_{{ states('input_datetime.debut_machine') | replace(' ', '_') }}
 
           # CAS B : FIN DU CYCLE
           # On valide la fin : État=Terminé, Heure de fin.
@@ -236,7 +239,8 @@ automation:
                       ⚡ Conso : {{ states('sensor.compteur_lave_linge_cycle') }} kWh
                       💶 Coût : {{ states('sensor.lave_linge_cout_cycle') }} €
                     title: 🧺 Lave-Linge Terminé
-                    notification_id: lave_linge_fin
+                    notification_id: >-
+                      lave_linge_fin_{{ states('input_datetime.debut_machine') | replace(' ', '_') }}
 
                 - delay:
                     hours: 0
