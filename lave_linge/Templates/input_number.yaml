@@ -9,3 +9,14 @@ cout_du_kwh:
   unit_of_measurement: "€/kWh"
   icon: mdi:currency-eur
   mode: box
+
+# [HELPER] Seuil de Démarrage (W)
+# Permet d'ajuster le seuil de démarrage depuis l'UI sans modifier de YAML
+seuil_demarrage_lave_linge:
+  name: "Seuil Démarrage Lave-Linge"
+  min: 1
+  max: 100
+  step: 1
+  unit_of_measurement: "W"
+  icon: mdi:flash-outline
+  mode: box

@@ -17,6 +17,17 @@ input_number:
     icon: mdi:currency-eur
     mode: box
 
+  # [HELPER] Seuil de Démarrage (W)
+  # Permet d'ajuster le seuil de démarrage depuis l'UI sans modifier de YAML
+  seuil_demarrage_lave_vaisselle:
+    name: "Seuil Démarrage Lave-Vaisselle"
+    min: 1
+    max: 100
+    step: 1
+    unit_of_measurement: "W"
+    icon: mdi:flash-outline
+    mode: box
+
 input_select:
   # [HELPER] État de la Machine
   # Stocke l'état actuel (Éteint / En marche / Terminé).
@@ -53,6 +64,7 @@ utility_meter:
     # [A_CHANGER] Remplacez 'sensor.prislavvais_energy' par votre capteur de consommation totale (kWh)
     source: sensor.prislavvais_energy
     name: "Compteur Lave Vaisselle Cycle"
+    unique_id: compteur_lave_vaisselle_cycle
     # cycle: never # Pas de cycle automatique (reset manuel via automation)
 
 # 3. TEMPLATE SENSORS
@@ -69,9 +81,9 @@ template:
         delay_off:
           minutes: 3
         # [A_CHANGER] Remplacez 'sensor.prislavvais_power' par votre capteur de puissance (W)
-        # Ajustez le seuil (ici > 5W) selon la veille de votre appareil
+        # Ajustez le seuil dynamiquement via le helper (ici fallback 4W si indisponible)
         state: >
-          {{ states('sensor.prislavvais_power')|float(0) > 5 }}
+          {{ states('sensor.prislavvais_power')|float(0) > states('input_number.seuil_demarrage_lave_vaisselle')|float(4) }}
         icon: mdi:dishwasher
 
   - sensor:

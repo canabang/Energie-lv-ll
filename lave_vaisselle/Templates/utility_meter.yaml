@@ -3,4 +3,5 @@ compteur_lave_vaisselle_cycle:
   # [CONFIG] Remplacez 'sensor.prislavvais_energy' par votre capteur de consommation totale (kWh)
   source: sensor.prislavvais_energy
   name: "Compteur Lave Vaisselle Cycle"
+  unique_id: compteur_lave_vaisselle_cycle
   # cycle: never # Option invalide en YAML. Laisser vide = Pas de cycle automatique.

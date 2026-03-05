@@ -10,9 +10,9 @@
         minutes: 1
       delay_off:
         minutes: 3  # Petite tempo pour éviter les faux arrêts
-      # [CONFIG] Ajustez le seuil (ici 5W) selon la veille de votre machine
+      # [CONFIG] Ajustez le seuil dynamiquement via le helper (fallback 5W)
       state: >
-        {{ states('sensor.prismal_power')|float(0) > 5 }}
+        {{ states('sensor.prismal_power')|float(0) > states('input_number.seuil_demarrage_lave_linge')|float(5) }}
       icon: mdi:washing-machine
 
 # Capteurs d'États et Calculs

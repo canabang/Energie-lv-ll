@@ -35,7 +35,7 @@ actions:
         sequence:
           - action: utility_meter.reset
             target:
-              entity_id: sensor.compteur_prislavvais_cycle
+              entity_id: sensor.compteur_lave_vaisselle_cycle
           - action: input_select.select_option
             target:
               entity_id: input_select.etat_lave_vaisselle
@@ -98,7 +98,7 @@ actions:
           consigne: >
             Annonce la fin du cycle de lavage de la vaisselle.
 
-            Consommation : {{ states('sensor.compteur_prislavvais_cycle') }}
+            Consommation : {{ states('sensor.compteur_lave_vaisselle_cycle') }}
             kWh.
 
             Durée : {{ states('sensor.lave_vaisselle_duree_cycle') }}.
@@ -129,7 +129,7 @@ actions:
           description: >-
             {{ generated_message.data }}
 
-            ⚡ Consommation : {{ states('sensor.compteur_prislavvais_cycle') }}
+            ⚡ Consommation : {{ states('sensor.compteur_lave_vaisselle_cycle') }}
             kWh.  ⏱️ Durée : {{ states('sensor.lave_vaisselle_duree_cycle')
             }}. 💶 Coût : {{ states('sensor.lave_vaisselle_cout_cycle') }} €.
           image_url: https://i.ibb.co/pRvFCBy/home-assistant.png
@@ -140,7 +140,7 @@ actions:
           message: |
             Cycle terminé : {{ generated_message.data }}
             ⏱️ Durée : {{ states('sensor.lave_vaisselle_duree_cycle') }}
-            ⚡ Conso : {{ states('sensor.compteur_prislavvais_cycle') }} kWh
+            ⚡ Conso : {{ states('sensor.compteur_lave_vaisselle_cycle') }} kWh
             💶 Coût : {{ states('sensor.lave_vaisselle_cout_cycle') }} €
           title: 🍽️ Lave-Vaisselle Terminé
           notification_id: lave_vaisselle_fin

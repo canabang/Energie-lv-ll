@@ -24,6 +24,17 @@ input_number:
     icon: mdi:currency-eur
     mode: box
 
+  # [HELPER] Seuil de Démarrage (W)
+  # Permet d'ajuster le seuil de démarrage depuis l'UI sans modifier de YAML
+  seuil_demarrage_lave_linge:
+    name: "Seuil Démarrage Lave-Linge"
+    min: 1
+    max: 100
+    step: 1
+    unit_of_measurement: "W"
+    icon: mdi:flash-outline
+    mode: box
+
 input_select:
   # [HELPER] État de la Machine
   # Stocke l'état actuel (Éteint / En marche / Terminé).
@@ -76,9 +87,9 @@ template:
         delay_off:
           minutes: 3
         # [A_CHANGER] Remplacez 'sensor.prismal_power' par votre capteur de puissance (W)
-        # Ajustez le seuil (ici > 5W) selon la veille de votre appareil
+        # Ajustez le seuil dynamiquement via le helper (ici fallback 5W si indisponible)
         state: >
-          {{ states('sensor.prismal_power')|float(0) > 5 }}
+          {{ states('sensor.prismal_power')|float(0) > states('input_number.seuil_demarrage_lave_linge')|float(5) }}
         icon: mdi:washing-machine
 
   - sensor:
