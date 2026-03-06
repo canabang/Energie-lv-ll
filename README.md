@@ -7,7 +7,8 @@ Ce package contient une solution complète et robuste pour surveiller, calculer 
 ## ✨ Fonctionnalités Clés
 
 *   **Détection d'état intelligente** : Ne se base pas simplement sur la puissance instantanée, mais utilise un algorithme (temps + seuil) pour déterminer si la machine est "En marche", "Terminée" ou "Éteinte".
-*   **Calcul du coût précis** : Isole la consommation électrique de **chaque cycle** (pas le total cumulé à vie) et la multiplie par votre coût du kWh.
+*   **Double compteur d'énergie** : Un compteur **Total** (accumulation globale) et un compteur **Cycle** (remise à zéro automatique à chaque nouveau lavage) pour un suivi précis.
+*   **Calcul du coût précis** : Isole la consommation électrique de **chaque cycle** et la multiplie par votre coût du kWh.
 *   **Résilience 🛡️** : En cas de redémarrage de Home Assistant *pendant* un lavage, le système reprend exactement là où il en était (temps écoulé, état, coût). Rien n'est perdu.
 *   **Notifications Persistantes** : Une fois le cycle terminé, une notification s'affiche dans HA avec le résumé (Coût, Durée, kWh). Elle reste tant que vous n'avez pas éteint la machine/prise.
 *   **Aucun Polling** : 100% événementiel. Charge système nulle quand les machines ne tournent pas.
@@ -30,18 +31,19 @@ Chaque appareil possède son propre dossier avec sa documentation détaillée et
 
 ## 🎨 Interface Utilisateur (Dashboards)
 
-Vous trouverez dans les dossiers respectifs de chaque appareil **deux types de cartes Lovelace** prêtes à l'emploi. Vous pouvez copier leur code YAML directement dans votre dashboard Home Assistant.
+Vous trouverez dans les dossiers respectifs de chaque appareil **trois types de cartes Lovelace** prêtes à l'emploi. Vous pouvez copier leur code YAML directement dans votre dashboard Home Assistant.
 
 ### 1. Le Widget "Streamline" (Compact)
 *   **Fichiers :** `carte_*_streamline.yaml`
 *   **Usage :** Idéal pour une vue d'ensemble sur un écran d'accueil (mobile friendly).
 *   **Bonus :** Animation CSS "Aura Verte" autour de l'icône lorsque l'appareil est en marche.
-![Aperçu Streamline Lave Linge](lave_linge/carte_lave_linge.png)
+![Aperçu Streamline Lave Linge](lave_linge/carte_lave_linge_streamline.png)
 
 ### 2. La Carte "Analyse Détaillée" (Standard)
 *   **Fichiers :** `dashboard_final_*.yaml` (À la racine)
 *   **Usage :** Idéal pour une page dédiée à l'énergie.
 *   **Contient :** Historique de la consommation sur les dernières 24h, monitoring de la tension électrique (V), état en direct et bouton d'action sur la prise.
+![Aperçu Analyse Détaillée Lave Linge](lave_linge/carte_lave_linge.png)
 
 ### 3. Le Dashboard "Suivi Entités" (Admin)
 *   **Fichier :** `dashboard_entites_suivi.yaml` (À la racine)
@@ -87,7 +89,7 @@ Depuis l'interface visuelle de Home Assistant, créez une nouvelle automatisatio
 
 Vous n'aurez qu'à configurer **2 entités** :
 1. Le capteur de fonctionnement de l'appareil (ex: `binary_sensor.lave_vaisselle_en_marche`).
-2. La prise connectée physique (ex: `switch.prislavvais`).
+2. La prise connectée physique (ex: `switch.votre_prise`).
 
 ### 🔌 Options & Actions Libres
 Le Blueprint déduira automatiquement le reste de vos entités. Vous avez le contrôle total sur la manière d'être notifié :
