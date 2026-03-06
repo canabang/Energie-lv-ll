@@ -54,6 +54,21 @@ blueprint:
       selector:
         text: {}
 
+    message_notification:
+      name: Message de fin (Personnalisable)
+      description: "Ce texte sera utilisé pour la notification persistante HA. Les variables dynamiques comme `duree_cycle`, `cout_cycle` ou `compteur_cycle` fonctionneront car le blueprint les déduit du nom de votre capteur."
+      default: >
+        Cycle terminé pour : {{ base_name | replace('_', ' ') | title }}.
+
+        ⏱️ Durée : {{ states(duree_cycle) }}
+
+        ⚡ Conso : {{ states(compteur_cycle) }} kWh
+
+        💶 Coût : {{ states(cout_cycle) }} €
+      selector:
+        text:
+          multiline: true
+
     # -----------------------------
     # 3. ACTIONS LIBRES POUR L'UTILISATEUR
     # -----------------------------
@@ -92,15 +107,8 @@ variables:
   titre_var: !input titre_notification
   activer_notif: !input activer_notification_ha
 
-  # Le beau message pré-construit utilisable par l'utilisateur !
-  message_fin: >
-    Cycle terminé pour : {{ base_name | replace('_', ' ') | title }}.
-
-    ⏱️ Durée : {{ states(duree_cycle) }}
-
-    ⚡ Conso : {{ states(compteur_cycle) }} kWh
-
-    💶 Coût : {{ states(cout_cycle) }} €
+  # Le message pré-construit ou modifié par l'utilisateur !
+  message_fin: !input message_notification
 
 # Déclencheurs
 trigger:
