@@ -6,7 +6,7 @@ blueprint:
     Il base **toute** sa configuration sur le <b>Capteur de Fonctionnement</b> (ex: `binary_sensor.lave_vaisselle_en_marche`).
     Toutes les autres entités associées (`input_select`, `utility_meter`, dates...) sont assignées automatiquement via la racine de ce nom (`lave_vaisselle`).<br><br>
     
-    À la fin du cycle, une variable <code>{{ message_fin }}</code> pré-formatée contenant la durée, la consommation et le coût est générée. Vous pouvez utiliser cette variable directement dans vos propres actions (ex: une action `notify`).
+    À la fin du cycle, une <b>notification persistante</b> (affichée dans votre HA) ainsi qu'une variable <code>{{ message_fin }}</code> pré-formatée contenant la durée, la consommation et le coût sont générées. Vous pouvez utiliser cette variable directement dans vos propres actions (ex: au sein d'une action `notify`).
   domain: automation
   input:
     # -----------------------------
@@ -29,6 +29,13 @@ blueprint:
     # -----------------------------
     # 2. OPTIONS ET TEXTE
     # -----------------------------
+    activer_notification_ha:
+      name: Créer une notification persistante HA ?
+      description: "Génère une notification directement dans l'interface Home Assistant à la fin du cycle (avec le titre et le message ci-dessous)."
+      default: true
+      selector:
+        boolean: {}
+
     delai_boucle:
       name: Délai de rappel (Minutes)
       description: Temps d'attente entre deux notifications de fin dans la boucle.
@@ -180,11 +187,15 @@ action:
       - repeat:
           sequence:
             # 1. Notification persistante HA en dur (incluse par défaut pour garder trace)
-            - service: persistent_notification.create
-              data:
-                message: "{{ message_fin }}"
-                title: "{{ titre_var }}"
-                notification_id: "{{ base_name }}_fin"
+            - if:
+                - condition: template
+                  value_template: "{{ !input activer_notification_ha }}"
+              then:
+                - service: persistent_notification.create
+                  data:
+                    message: "{{ message_fin }}"
+                    title: "{{ titre_var }}"
+                    notification_id: "{{ base_name }}_fin"
 
             # 2. Actions perso Utilisateur, capable d'utiliser {{ message_fin }} !
             - choose:
