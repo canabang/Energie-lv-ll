@@ -209,6 +209,9 @@ cards:
               background: {{ 'rgba(46, 139, 87, 0.1)' if is_state('switch.A_CHANGER_PRISE', 'on') else '' }} !important;
               border: none !important;
             }
+      # [OPTIONNEL] Sécurité enfant (Child Lock)
+      # Cette fonctionnalité est spécifique aux prises Nous/Tuya.
+      # Si votre prise ne supporte pas le child_lock, vous pouvez supprimer ce bloc entier.
       - type: custom:mushroom-chips-card
         chips:
           - type: template

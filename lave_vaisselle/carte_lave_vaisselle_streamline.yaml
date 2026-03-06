@@ -25,7 +25,7 @@ card_mod:
 card:
   type: horizontal-stack
   cards:
-    # --- COLONNE DE GAUCHE : LAVE LINGE ET STATUT ---
+    # --- COLONNE DE GAUCHE : LAVE VAISSELLE ET STATUT ---
     - type: custom:mushroom-template-card
       primary: Lave Vaisselle
       secondary: >-

@@ -98,10 +98,10 @@ variables:
   base_name: "{{ appareil_var.split('.')[1] | replace('_en_marche', '') }}"
   
   # Construction des strings d'Entités (c'est le package qui les a créés)
-  etat_appareil: "input_select.etat_{{ base_name | replace('_machine', '') }}" # Cas spécial pour lave-linge
+  etat_appareil: "input_select.etat_{{ base_name }}"
   compteur_cycle: "sensor.compteur_{{ base_name }}_cycle"
-  heure_debut: "input_datetime.debut_{{ base_name | replace('_lave_linge', '_machine') }}"
-  heure_fin: "input_datetime.fin_{{ base_name | replace('_lave_linge', '_machine') }}"
+  heure_debut: "input_datetime.debut_{{ base_name }}"
+  heure_fin: "input_datetime.fin_{{ base_name }}"
   duree_cycle: "sensor.{{ base_name }}_duree_cycle"
   cout_cycle: "sensor.{{ base_name }}_cout_cycle"
   titre_var: !input titre_notification

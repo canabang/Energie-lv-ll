@@ -2,6 +2,8 @@
 
 Ce package contient une solution complète et robuste pour surveiller, calculer le coût et notifier la fin des cycles de vos appareils électroménagers (Lave-Linge et Lave-Vaisselle) dans Home Assistant.
 
+> 📖 **Tous les fichiers YAML** (Packages, Dashboards, Blueprint) sont **intégralement commentés** ligne par ligne pour expliquer le rôle de chaque entité, variable et bloc de code. N'hésitez pas à les ouvrir pour comprendre le fonctionnement.
+
 ---
 
 ## ✨ Fonctionnalités Clés
@@ -78,6 +80,8 @@ Déposez le fichier de configuration de l'appareil souhaité dans votre dossier 
 > Sans remplacer ces variables clés, les capteurs ne remonteront aucune mesure et le blueprint de notifications ne s'activera pas !
 
 > *Ce fichier `package` va générer automatiquement tous les capteurs virtuels, les compteurs de consommation et les variables (Helpers) nécessaires au bon fonctionnement.*
+
+> 💡 **Note** : Les deux packages déclarent le même Helper `input_number.cout_du_kwh` (prix du kWh). C'est **un seul et unique** paramètre partagé par les deux appareils. Il suffit qu'**un seul** des deux packages soit installé pour que le système fonctionne. Si vous installez les deux, commentez l'un des deux dans le fichier package.
 
 ### 2. Importation du Blueprint (Le Cerveau)
 Téléchargez ou copiez le fichier [`gestion_cycle_appareil.yaml`](./gestion_cycle_appareil.yaml) dans le dossier `blueprints/automation/` de votre Home Assistant.

@@ -178,12 +178,12 @@ cards:
     icon_color: cyan
 
   - type: custom:mushroom-entity-card
-    entity: input_datetime.debut_machine
+    entity: input_datetime.debut_lave_linge
     name: Helper Début
     icon_color: grey
 
   - type: custom:mushroom-entity-card
-    entity: input_datetime.fin_machine
+    entity: input_datetime.fin_lave_linge
     name: Helper Fin
     icon_color: grey
 

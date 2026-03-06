@@ -51,11 +51,11 @@ input_datetime:
   # [HELPER] Horodatage
   # Deux entités pour stocker l'heure de début et de fin.
   # Permet de calculer la durée précise du cycle, même après un redémarrage.
-  debut_machine:
+  debut_lave_linge:
     name: "Lave Linge - Début"
     has_date: true
     has_time: true
-  fin_machine:
+  fin_lave_linge:
     name: "Lave Linge - Fin"
     has_date: true
     has_time: true
@@ -121,8 +121,8 @@ template:
         unique_id: lave_linge_duree_cycle
         icon: mdi:timer
         state: >
-          {% set debut = states('input_datetime.debut_machine') %}
-          {% set fin = states('input_datetime.fin_machine') %}
+          {% set debut = states('input_datetime.debut_lave_linge') %}
+          {% set fin = states('input_datetime.fin_lave_linge') %}
           {% set etat = states('sensor.lave_linge_etat') %}
           
           {% if debut != 'unknown' %}
@@ -141,8 +141,8 @@ template:
             Inconnu
           {% endif %}
         attributes:
-          debut: "{{ states('input_datetime.debut_machine') }}"
-          fin: "{{ states('input_datetime.fin_machine') }}"
+          debut: "{{ states('input_datetime.debut_lave_linge') }}"
+          fin: "{{ states('input_datetime.fin_lave_linge') }}"
 
       # [SENSOR] Estimation du Coût
       # Multiplie la consommation du cycle actuel (kWh) par le prix unitaire (€/kWh).
