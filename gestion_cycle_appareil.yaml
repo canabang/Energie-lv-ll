@@ -1,0 +1,201 @@
+blueprint:
+  name: 🔄 Gestion Énergie - Cycle Appareil
+  description: >
+    **Version Minimaliste (Plug&Play)**
+    Ce blueprint gère le cycle complet d'un appareil (Lave-Vaisselle, Lave-Linge...) à partir du package.
+    
+    Il base toute sa configuration sur le **Capteur de fonctionnement** (ex: `binary_sensor.lave_vaisselle_en_marche`).
+    Toutes les autres entités (`input_select`, `utility_meter`, dates...) sont "devinées" automatiquement via la racine du nom (`lave_vaisselle`).
+    
+    À la fin du cycle, une variable **`{{ message_fin }}`** est générée. Vous pouvez l'utiliser dans vos propres actions de notification !
+  domain: automation
+  input:
+    # -----------------------------
+    # 1. ENTITÉS DÉCLENCHEURS
+    # -----------------------------
+    appareil_en_marche:
+      name: Capteur de fonctionnement (Binary Sensor)
+      description: "L'entité qui passe à 'on' en fonctionnement. Exemple : binary_sensor.lave_vaisselle_en_marche. (ATTENTION: Doit se terminer par '_en_marche')"
+      selector:
+        entity:
+          domain: binary_sensor
+
+    prise_connectee:
+      name: Prise Connectée (Switch)
+      description: "Sert de condition d'arrêt pour la boucle de notification. Si éteinte, la boucle s'arrête."
+      selector:
+        entity:
+          domain: switch
+
+    # -----------------------------
+    # 2. OPTIONS ET TEXTE
+    # -----------------------------
+    delai_boucle:
+      name: Délai de rappel (Minutes)
+      description: Temps d'attente entre deux notifications de fin dans la boucle.
+      default: 5
+      selector:
+        number:
+          min: 1
+          max: 60
+          step: 1
+          unit_of_measurement: min
+
+    titre_notification:
+      name: Titre de la notification
+      description: Titre qui sera utilisé pour la notification persistante de Home Assistant.
+      default: "✅ Cycle Terminé"
+      selector:
+        text: {}
+
+    # -----------------------------
+    # 3. ACTIONS LIBRES POUR L'UTILISATEUR
+    # -----------------------------
+    action_demarrage:
+      name: Séquence au Démarrage
+      description: "Actions quand le cycle commence (Optionnel)."
+      default: []
+      selector:
+        action: {}
+
+    action_fin:
+      name: Séquence à la Fin (Répétitive)
+      description: >
+        Actions quand le cycle est TERMINÉ (Répété en boucle tant que la prise est ON).
+        💡 ASTUCE : Vous pouvez utiliser la variable template **{{ message_fin }}** dans l'outil 'Message' de vos services de notification (Alexa, Mobile App, etc.) pour récupérer automatiquement la durée, la conso et le prix !
+      default: []
+      selector:
+        action: {}
+
+mode: restart
+
+# Construction de TOUTES les entités à partir de l'input principal
+# Ex input: binary_sensor.lave_vaisselle_en_marche
+# -> base_name: lave_vaisselle
+variables:
+  appareil_var: !input appareil_en_marche
+  base_name: "{{ appareil_var.split('.')[1] | replace('_en_marche', '') }}"
+  
+  # Construction des strings d'Entités (c'est le package qui les a créés)
+  etat_appareil: "input_select.etat_{{ base_name | replace('_machine', '') }}" # Cas spécial pour lave-linge
+  compteur_cycle: "sensor.compteur_{{ base_name }}_cycle"
+  heure_debut: "input_datetime.debut_{{ base_name | replace('_lave_linge', '_machine') }}"
+  heure_fin: "input_datetime.fin_{{ base_name | replace('_lave_linge', '_machine') }}"
+  duree_cycle: "sensor.{{ base_name }}_duree_cycle"
+  cout_cycle: "sensor.{{ base_name }}_cout_cycle"
+  titre_var: !input titre_notification
+
+  # Le beau message pré-construit utilisable par l'utilisateur !
+  message_fin: >
+    Cycle terminé pour : {{ base_name | replace('_', ' ') | title }}.
+
+    ⏱️ Durée : {{ states(duree_cycle) }}
+
+    ⚡ Conso : {{ states(compteur_cycle) }} kWh
+
+    💶 Coût : {{ states(cout_cycle) }} €
+
+# Déclencheurs
+trigger:
+  - platform: state
+    entity_id: !input appareil_en_marche
+    from: "off"
+    to: "on"
+    id: demarrage
+  - platform: state
+    entity_id: !input appareil_en_marche
+    from: "on"
+    to: "off"
+    id: fin
+  - platform: homeassistant
+    event: start
+    id: redemarrage
+
+action:
+  - choose:
+      # CAS A : DÉMARRAGE
+      - conditions:
+          - condition: trigger
+            id: demarrage
+        sequence:
+          # 1. Reset Compteur
+          - service: utility_meter.reset
+            target:
+              entity_id: "{{ compteur_cycle }}"
+          # 2. Etat = En marche
+          - service: input_select.select_option
+            target:
+              entity_id: "{{ etat_appareil }}"
+            data:
+              option: En marche
+          # 3. Enregistrement Heure Début
+          - service: input_datetime.set_datetime
+            target:
+              entity_id: "{{ heure_debut }}"
+            data:
+              datetime: "{{ now() }}"
+          # 4. Action perso Utilisateur
+          - choose:
+              - conditions: "{{ true }}"
+                sequence: !input action_demarrage
+
+      # CAS B : FIN DU CYCLE
+      - conditions:
+          - condition: trigger
+            id: fin
+        sequence:
+          # 1. Etat = Terminé
+          - service: input_select.select_option
+            target:
+              entity_id: "{{ etat_appareil }}"
+            data:
+              option: Terminé
+          # 2. Enregistrement Heure Fin
+          - service: input_datetime.set_datetime
+            target:
+              entity_id: "{{ heure_fin }}"
+            data:
+              datetime: "{{ now() }}"
+
+      # CAS C : REDÉMARRAGE HA
+      - conditions:
+          - condition: trigger
+            id: redemarrage
+        sequence:
+          - wait_template: |-
+              {{ has_value(etat_appareil) and 
+                 has_value('!input prise_connectee') }}
+            timeout: "00:05:00"
+            continue_on_timeout: false
+
+  # ---------------------------------------------------------
+  # MOTEUR DE BOUCLE (FIN)
+  # ---------------------------------------------------------
+  - if:
+      - condition: template
+        value_template: "{{ is_state(etat_appareil, 'Terminé') }}"
+      - condition: state
+        entity_id: !input prise_connectee
+        state: "on"
+    then:
+      - repeat:
+          sequence:
+            # 1. Notification persistante HA en dur (incluse par défaut pour garder trace)
+            - service: persistent_notification.create
+              data:
+                message: "{{ message_fin }}"
+                title: "{{ titre_var }}"
+                notification_id: "{{ base_name }}_fin"
+
+            # 2. Actions perso Utilisateur, capable d'utiliser {{ message_fin }} !
+            - choose:
+                - conditions: "{{ true }}"
+                  sequence: !input action_fin
+
+            # 3. Délai de la boucle
+            - delay:
+                minutes: !input delai_boucle
+          while:
+            - condition: state
+              entity_id: !input prise_connectee
+              state: "on"
