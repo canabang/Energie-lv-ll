@@ -1,33 +1,22 @@
 alias: 🧺 Lave-Linge - Gestion Cycle & Notifications (V4 - No Poll)
 description: "Version 4 : Boucle Repeat résiliente (se relance au redémarrage si nécessaire)"
-mode: restart
 triggers:
-  # 1. DÉMARRAGE : La puissance dépasse le seuil (défini dans le binary_sensor)
   - trigger: state
     entity_id: binary_sensor.lave_linge_en_marche
     from: "off"
     to: "on"
     id: demarrage
-  
-  # 2. FIN : La puissance repasse sous le seuil (cycle fini)
   - trigger: state
     entity_id: binary_sensor.lave_linge_en_marche
     from: "on"
     to: "off"
     id: fin
-
-  # 3. REDÉMARRAGE HA : Sécurité pour relancer la boucle si le cycle était "Terminé"
   - trigger: homeassistant
     event: start
     id: redemarrage
 conditions: []
 actions:
-  # ---------------------------------------------------------
-  # 1. INITIALISATION SELON LE DÉCLENCHEUR
-  # ---------------------------------------------------------
   - choose:
-      # CAS A : DÉMARRAGE
-      # On initialise : Reset du compteur kWh, passage à "En marche", mémorisation de l'heure.
       - conditions:
           - condition: trigger
             id: demarrage
@@ -48,8 +37,6 @@ actions:
           - action: script.notification_alexa
             data:
               message: La machine à laver est lancée.
-      # CAS B : FIN DU CYCLE
-      # On valide la fin : Passage à "Terminé", mémorisation de l'heure de fin.
       - conditions:
           - condition: trigger
             id: fin
@@ -64,21 +51,15 @@ actions:
               entity_id: input_datetime.fin_machine
             data:
               datetime: "{{ now() }}"
-      # CAS C : REDÉMARRAGE HA
-      # On attend que les entités soient prêtes avant de continuer.
       - conditions:
           - condition: trigger
             id: redemarrage
         sequence:
-          # On attend que les entités soient disponibles (plus d'inconnu/indisponible)
           - wait_template: |-
               {{ has_value('input_select.etat_lave_linge') and 
                  has_value('switch.prismal') }} # [CONFIG] Votre prise connectée
             timeout: "00:05:00"
             continue_on_timeout: false
-  # ---------------------------------------------------------
-  # 2. BOUCLE DE NOTIFICATION (COMMUNE)
-  # ---------------------------------------------------------
   - if:
       - condition: state
         entity_id: input_select.etat_lave_linge
@@ -89,7 +70,6 @@ actions:
     then:
       - repeat:
           sequence:
-            # A. Génération Message (Fraîcheur des données)
             - action: script.k_2so_generateur_de_message
               data:
                 mission: machine à laver finie
@@ -105,8 +85,6 @@ actions:
 
                   Ton : Serviable mais pressant.
               response_variable: generated_message
-            
-            # B. Notifications
             - action: script.notification_alexa
               data:
                 message: "{{ generated_message.data }}"
@@ -138,16 +116,13 @@ actions:
                   💶 Coût : {{ states('sensor.lave_linge_cout_cycle') }} €
                 title: 🧺 Lave-Linge Terminé
                 notification_id: lave_linge_fin
-                
-            # C. Wait 5 minutes
             - delay:
                 hours: 0
                 minutes: 5
                 seconds: 0
                 milliseconds: 0
-
-          # CONDITION DE SORTIE : Si la prise est éteinte, on arrête les notifs.
           while:
             - condition: state
               entity_id: switch.prismal
               state: "on"
+mode: restart

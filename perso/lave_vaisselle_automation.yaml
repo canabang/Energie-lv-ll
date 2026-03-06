@@ -1,34 +1,22 @@
 alias: 🍽️ Lave-Vaisselle - Gestion Cycle & Notifications (V4 - No Poll)
 description: "Version 4 : Boucle Repeat résiliente (se relance au redémarrage si nécessaire)"
-mode: restart
 triggers:
   - trigger: state
     entity_id: binary_sensor.lave_vaisselle_en_marche
     from: "off"
     to: "on"
     id: demarrage
-
-  # 2. FIN : La puissance repasse sous le seuil (cycle fini)
   - trigger: state
     entity_id: binary_sensor.lave_vaisselle_en_marche
     from: "on"
     to: "off"
     id: fin
-
-  # 3. REDÉMARRAGE HA : Sécurité pour relancer la boucle si le cycle était "Terminé"
   - trigger: homeassistant
     event: start
     id: redemarrage
-
 conditions: []
-
 actions:
-  # ---------------------------------------------------------
-  # 1. INITIALISATION SELON LE DÉCLENCHEUR
-  # ---------------------------------------------------------
   - choose:
-      # CAS A : DÉMARRAGE
-      # On initialise : Reset du compteur kWh, passage à "En marche", mémorisation de l'heure.
       - conditions:
           - condition: trigger
             id: demarrage
@@ -49,9 +37,6 @@ actions:
           - action: script.notification_alexa
             data:
               message: Le lave-vaisselle est lancé.
-
-      # CAS B : FIN DU CYCLE
-      # On valide la fin : Passage à "Terminé", mémorisation de l'heure de fin.
       - conditions:
           - condition: trigger
             id: fin
@@ -66,32 +51,23 @@ actions:
               entity_id: input_datetime.fin_lave_vaisselle
             data:
               datetime: "{{ now() }}"
-
-      # CAS C : REDÉMARRAGE HA
-      # On attend que les entités soient prêtes avant de continuer.
       - conditions:
           - condition: trigger
             id: redemarrage
         sequence:
-          # On attend que les entités soient disponibles (plus d'inconnu/indisponible)
           - wait_template: |-
               {{ has_value('input_select.etat_lave_vaisselle') and 
                  has_value('switch.prislavvais') }} # [CONFIG] Votre prise connectée
             timeout: "00:05:00"
             continue_on_timeout: false
-
-  # ---------------------------------------------------------
-  # 2. BOUCLE DE NOTIFICATION (COMMUNE)
-  # ---------------------------------------------------------
   - if:
       - condition: state
         entity_id: input_select.etat_lave_vaisselle
         state: Terminé
       - condition: state
-        entity_id: switch.prislavvais # [CONFIG] Votre prise connectée
+        entity_id: switch.prislavvais
         state: "on"
     then:
-      # A. Génération Message (Fraîcheur des données)
       - action: script.k_2so_generateur_de_message
         data:
           mission: lave vaisselle fini
@@ -107,12 +83,9 @@ actions:
 
             Ton : Serviable mais pressant.
         response_variable: generated_message
-      
-      # B. Notifications
       - action: script.notification_alexa
         data:
           message: "{{ generated_message.data }}"
-      
       - action: script.awtrix_dynamique_customapp_and_notify
         data:
           icone: dishwasher
@@ -121,7 +94,6 @@ actions:
           color: "#2e8b57"
           duree: "25"
           message: Lave-Vaisselle Fin | {{ generated_message.data }}
-      
       - action: script.notification_discord
         metadata: {}
         data:
@@ -129,12 +101,10 @@ actions:
           description: >-
             {{ generated_message.data }}
 
-            ⚡ Consommation : {{ states('sensor.compteur_lave_vaisselle_cycle') }}
-            kWh.  ⏱️ Durée : {{ states('sensor.lave_vaisselle_duree_cycle')
+            ⚡ Consommation : {{ states('sensor.compteur_lave_vaisselle_cycle')
+            }} kWh.  ⏱️ Durée : {{ states('sensor.lave_vaisselle_duree_cycle')
             }}. 💶 Coût : {{ states('sensor.lave_vaisselle_cout_cycle') }} €.
           image_url: https://i.ibb.co/pRvFCBy/home-assistant.png
-      
-      # C. Persistent Notification (Optionnel, pour garder une trace)
       - action: persistent_notification.create
         data:
           message: |
@@ -144,8 +114,7 @@ actions:
             💶 Coût : {{ states('sensor.lave_vaisselle_cout_cycle') }} €
           title: 🍽️ Lave-Vaisselle Terminé
           notification_id: lave_vaisselle_fin
-
-      # D. Coupure de la prise
       - action: switch.turn_off
         target:
           entity_id: switch.prislavvais
+mode: restart

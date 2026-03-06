@@ -1,0 +1,131 @@
+# Package PERSO : Gestion du Lave-Vaisselle (V4.2 - Production)
+# Ce fichier est la version personnalisée, avec les vrais noms d'entités de ma production.
+# NE PAS PARTAGER TEL QUEL (contient les noms de mes prises connectées).
+
+# 1. HELPERS (Entrées)
+# --------------------
+input_number:
+  # Prix du kWh — partagé avec le lave-linge (n'en déclarer qu'un seul !)
+  cout_du_kwh:
+    name: "Coût du kWh"
+    min: 0
+    max: 10
+    step: 0.0001
+    unit_of_measurement: "€/kWh"
+    icon: mdi:currency-eur
+    mode: box
+
+  # Seuil de puissance au-dessus duquel on considère que la machine tourne
+  seuil_demarrage_lave_vaisselle:
+    name: "Seuil Démarrage Lave-Vaisselle"
+    min: 1
+    max: 100
+    step: 1
+    unit_of_measurement: "W"
+    icon: mdi:flash-outline
+    mode: box
+
+input_select:
+  # Mémorise l'état du cycle (Éteint / En marche / Terminé)
+  etat_lave_vaisselle:
+    name: "Lave Vaisselle - État"
+    options:
+      - Éteint
+      - En marche
+      - Terminé
+    icon: mdi:dishwasher
+
+input_datetime:
+  # Horodatage du début et de la fin du cycle
+  debut_lave_vaisselle:
+    name: "Lave Vaisselle - Début"
+    has_date: true
+    has_time: true
+  fin_lave_vaisselle:
+    name: "Lave Vaisselle - Fin"
+    has_date: true
+    has_time: true
+
+# 2. UTILITY METER (Compteurs d'Énergie)
+# --------------------------------------
+utility_meter:
+  # Compteur Total — ne se remet jamais à zéro, accumule tout l'historique
+  # Nom conservé depuis la production pour garder l'historique du recorder (5.52 kWh)
+  compteur_prislavvais_total:
+    source: sensor.prislavvais_energy
+    name: "Compteur Lave Vaisselle Total"
+    unique_id: compteur_prislavvais_total
+
+  # Compteur de Cycle — remis à zéro au début de chaque cycle par l'automatisation
+  compteur_lave_vaisselle_cycle:
+    source: sensor.prislavvais_energy
+    name: "Compteur Lave Vaisselle Cycle"
+    unique_id: compteur_lave_vaisselle_cycle
+
+# 3. TEMPLATE SENSORS
+# -------------------
+template:
+  - binary_sensor:
+      # Détection de fonctionnement (ON quand la puissance dépasse le seuil)
+      - name: "Lave Vaisselle En Marche"
+        unique_id: lave_vaisselle_en_marche
+        device_class: running
+        delay_on:
+          minutes: 1
+        delay_off:
+          minutes: 3
+        state: >
+          {{ states('sensor.prislavvais_power')|float(0) > states('input_number.seuil_demarrage_lave_vaisselle')|float(4) }}
+        icon: mdi:dishwasher
+
+  - sensor:
+      # État Composite (Lavage / Terminé / Éteint)
+      - name: "Lave Vaisselle État"
+        unique_id: lave_vaisselle_etat
+        icon: mdi:state-machine
+        state: >
+          {% if is_state('binary_sensor.lave_vaisselle_en_marche', 'on') %}
+            Lavage
+          {% elif is_state('input_select.etat_lave_vaisselle', 'Terminé') %}
+            Terminé
+          {% else %}
+            Éteint
+          {% endif %}
+
+      # Durée du cycle (en cours ou terminé)
+      - name: "Lave Vaisselle Durée Cycle"
+        unique_id: lave_vaisselle_duree_cycle
+        icon: mdi:timer
+        state: >
+          {% set debut = states('input_datetime.debut_lave_vaisselle') %}
+          {% set fin = states('input_datetime.fin_lave_vaisselle') %}
+          {% set etat = states('sensor.lave_vaisselle_etat') %}
+          
+          {% if debut != 'unknown' %}
+            {% set debut_ts = as_timestamp(debut) %}
+            {% set now_ts = as_timestamp(now()) %}
+            
+            {% if etat == 'Lavage' %}
+              {{ ((now_ts - debut_ts) / 60) | round(0) }} min
+            {% elif etat == 'Terminé' and fin != 'unknown' %}
+               {% set fin_ts = as_timestamp(fin) %}
+               {{ ((fin_ts - debut_ts) / 60) | round(0) }} min
+            {% else %}
+              0 min
+            {% endif %}
+          {% else %}
+            Inconnu
+          {% endif %}
+        attributes:
+          debut: "{{ states('input_datetime.debut_lave_vaisselle') }}"
+          fin: "{{ states('input_datetime.fin_lave_vaisselle') }}"
+
+      # Coût du cycle en cours
+      - name: "Lave Vaisselle Coût Cycle"
+        unique_id: lave_vaisselle_cout_cycle
+        icon: mdi:cash
+        unit_of_measurement: "€"
+        state: >
+          {% set energie = states('sensor.compteur_lave_vaisselle_cycle') | float(0) %}
+          {% set prix = states('input_number.cout_du_kwh') | float(0) %}
+          {{ (energie * prix) | round(2) }}

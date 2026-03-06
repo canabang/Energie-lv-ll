@@ -1,0 +1,128 @@
+alias: 🧺 Lave-Linge - Gestion Cycle & Notifications (V4 - No Poll)
+description: "Version 4 : Boucle Repeat résiliente (se relance au redémarrage si nécessaire)"
+triggers:
+  - trigger: state
+    entity_id: binary_sensor.lave_linge_en_marche
+    from: "off"
+    to: "on"
+    id: demarrage
+  - trigger: state
+    entity_id: binary_sensor.lave_linge_en_marche
+    from: "on"
+    to: "off"
+    id: fin
+  - trigger: homeassistant
+    event: start
+    id: redemarrage
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: demarrage
+        sequence:
+          - action: utility_meter.reset
+            target:
+              entity_id: sensor.compteur_prismal_cycle
+          - action: input_select.select_option
+            target:
+              entity_id: input_select.etat_lave_linge
+            data:
+              option: En marche
+          - action: input_datetime.set_datetime
+            target:
+              entity_id: input_datetime.debut_machine
+            data:
+              datetime: "{{ now() }}"
+          - action: script.notification_alexa
+            data:
+              message: La machine à laver est lancée.
+      - conditions:
+          - condition: trigger
+            id: fin
+        sequence:
+          - action: input_select.select_option
+            target:
+              entity_id: input_select.etat_lave_linge
+            data:
+              option: Terminé
+          - action: input_datetime.set_datetime
+            target:
+              entity_id: input_datetime.fin_machine
+            data:
+              datetime: "{{ now() }}"
+      - conditions:
+          - condition: trigger
+            id: redemarrage
+        sequence:
+          - wait_template: |-
+              {{ has_value('input_select.etat_lave_linge') and 
+                 has_value('switch.prismal') }} # [CONFIG] Votre prise connectée
+            timeout: "00:05:00"
+            continue_on_timeout: false
+  - if:
+      - condition: state
+        entity_id: input_select.etat_lave_linge
+        state: Terminé
+      - condition: state
+        entity_id: switch.prismal
+        state: "on"
+    then:
+      - repeat:
+          sequence:
+            - action: script.k_2so_generateur_de_message
+              data:
+                mission: machine à laver finie
+                consigne: >
+                  Annonce la fin du cycle.
+
+                  Consommation : {{ states('sensor.compteur_prismal_cycle') }}
+                  kWh.
+
+                  Durée : {{ states('sensor.lave_linge_duree_cycle') }}.
+
+                  Coût : {{ states('sensor.lave_linge_cout_cycle') }} €.
+
+                  Ton : Serviable mais pressant.
+              response_variable: generated_message
+            - action: script.notification_alexa
+              data:
+                message: "{{ generated_message.data }}"
+            - action: script.awtrix_dynamique_customapp_and_notify
+              data:
+                icone: mal
+                rainbow: "true"
+                scrollspeed: "50"
+                color: "#2e8b57"
+                duree: "25"
+                message: Lave-Linge Fin | {{ generated_message.data }}
+            - action: script.notification_discord
+              metadata: {}
+              data:
+                nom: 🧺 Lave-Linge Terminé
+                description: >-
+                  {{ generated_message.data }}
+
+                  ⚡ Consommation : {{ states('sensor.compteur_prismal_cycle') }}
+                  kWh.  ⏱️ Durée : {{ states('sensor.lave_linge_duree_cycle')
+                  }}. 💶 Coût : {{ states('sensor.lave_linge_cout_cycle') }} €.
+                image_url: https://i.ibb.co/pRvFCBy/home-assistant.png
+            - action: persistent_notification.create
+              data:
+                message: |
+                  Cycle terminé : {{ generated_message.data }}
+                  ⏱️ Durée : {{ states('sensor.lave_linge_duree_cycle') }}
+                  ⚡ Conso : {{ states('sensor.compteur_prismal_cycle') }} kWh
+                  💶 Coût : {{ states('sensor.lave_linge_cout_cycle') }} €
+                title: 🧺 Lave-Linge Terminé
+                notification_id: lave_linge_fin
+            - delay:
+                hours: 0
+                minutes: 5
+                seconds: 0
+                milliseconds: 0
+          while:
+            - condition: state
+              entity_id: switch.prismal
+              state: "on"
+mode: restart
