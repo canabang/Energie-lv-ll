@@ -1,5 +1,5 @@
 # ==========================================
-# 🧺 WIDGET STREAMLINE LAVE-LINGE (V4.2)
+# 🧺 WIDGET STREAMLINE LAVE-VAISSELLE (V4.2)
 # ==========================================
 # Carte compacte animée avec effet "Aura" lors du fonctionnement.
 # Idéal pour un affichage sur tableau de bord d'accueil mobile.
@@ -27,11 +27,11 @@ card:
   cards:
     # --- COLONNE DE GAUCHE : LAVE LINGE ET STATUT ---
     - type: custom:mushroom-template-card
-      primary: Lave Linge
+      primary: Lave Vaisselle
       secondary: >-
         {% set etat_prise = states('switch.A_CHANGER_PRISE') %}
-        {% set prog = states('sensor.washing_machine_program') %}
-        {% set progress = states('sensor.washing_machine_progress') %}
+        {% set prog = states('sensor.dishwasher_program') %}
+        {% set progress = states('sensor.dishwasher_progress') %}
         
         {% if etat_prise == 'on' %}
           Allumé
@@ -40,7 +40,7 @@ card:
         {% else %}
           Éteint
         {% endif %}
-      icon: mdi:washing-machine
+      icon: mdi:dishwasher
       entity: switch.A_CHANGER_PRISE
       icon_color: >-
         {{ '#2E8B57' if is_state('switch.A_CHANGER_PRISE', 'on') else 'grey' }}
@@ -93,7 +93,7 @@ card:
         - type: template
           entity: sensor.A_CHANGER_PUISSANCE
           content: >-
-            {{ states('sensor.A_CHANGER_PUISSANCE') }} W | {{ states('sensor.lave_linge_cout_cycle') }} € | {{ states('sensor.compteur_lave_linge_cycle') | float(0) | round(1) }} kWh
+            {{ states('sensor.A_CHANGER_PUISSANCE') }} W | {{ states('sensor.lave_vaisselle_cout_cycle') }} € | {{ states('sensor.compteur_lave_vaisselle_cycle') | float(0) | round(1) }} kWh
           icon: mdi:flash
           icon_color: >-
             {{ 'orange' if is_state('switch.A_CHANGER_PRISE', 'on') else 'grey' }}

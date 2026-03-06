@@ -60,16 +60,24 @@ input_datetime:
     has_date: true
     has_time: true
 
-# 2. UTILITY METER (Compteur Cycle)
-# ---------------------------------
-# Note: Si vous l'avez déjà créé via l'UI, vous pouvez commenter ce bloc.
+# 2. UTILITY METER (Compteurs d'Énergie)
+# --------------------------------------
+# Note: Si vous les avez déjà créés via l'UI, vous pouvez commenter ce bloc.
 utility_meter:
+  # [HELPER] Compteur Total
+  # Ne se remet jamais à zéro (ou manuellement). Cumule l'énergie totale consommée par l'appareil.
+  compteur_lave_linge_total:
+    # [A_CHANGER] Remplacez 'sensor.A_CHANGER_ENERGIE' par votre capteur d'énergie (kWh)
+    source: sensor.A_CHANGER_ENERGIE
+    name: "Compteur Lave Linge Total"
+    unique_id: compteur_lave_linge_total
+    
   # [HELPER] Compteur de Cycle
   # Isole la consommation du cycle courant.
   # Il est remis à zéro automatiquement au début de chaque nouveau cycle (via l'automatisation).
   compteur_lave_linge_cycle:
-    # [A_CHANGER] Remplacez 'sensor.prismal_energy' par votre capteur de consommation totale (kWh)
-    source: sensor.prismal_energy
+    # [A_CHANGER] Remplacez 'sensor.A_CHANGER_ENERGIE' par votre capteur d'énergie (kWh)
+    source: sensor.A_CHANGER_ENERGIE
     name: "Compteur Lave Linge Cycle"
     # cycle: never # Pas de cycle automatique (reset manuel via automation)
 
@@ -86,10 +94,10 @@ template:
           minutes: 1
         delay_off:
           minutes: 3
-        # [A_CHANGER] Remplacez 'sensor.prismal_power' par votre capteur de puissance (W)
+        # [A_CHANGER] Remplacez 'sensor.A_CHANGER_PUISSANCE' par votre capteur de puissance (W)
         # Ajustez le seuil dynamiquement via le helper (ici fallback 5W si indisponible)
         state: >
-          {{ states('sensor.prismal_power')|float(0) > states('input_number.seuil_demarrage_lave_linge')|float(5) }}
+          {{ states('sensor.A_CHANGER_PUISSANCE')|float(0) > states('input_number.seuil_demarrage_lave_linge')|float(5) }}
         icon: mdi:washing-machine
 
   - sensor:
@@ -148,119 +156,3 @@ template:
           {% set prix = states('input_number.cout_du_kwh') | float(0) %}
           {{ (energie * prix) | round(2) }}
 
-# 4. AUTOMATION
-# -------------
-#automation:
-#  - alias: 🧺 Lave-Linge - Gestion Cycle & Notifications (Package)
-#    description: "Gestion complète du cycle et des notifications (Version Package)"
-#    mode: restart
-#    triggers:
-#      # 1. DÉMARRAGE : Quand la puissance dépasse le seuil (via le binary_sensor)
-#      - trigger: state
-#        entity_id: binary_sensor.lave_linge_en_marche
-#        from: "off"
-#        to: "on"
-#        id: demarrage
-#      # 2. FIN : Quand la puissance repasse sous le seuil
-#      - trigger: state
-#        entity_id: binary_sensor.lave_linge_en_marche
-#        from: "on"
-#        to: "off"
-#        id: fin
-#      # 3. REDÉMARRAGE HA : Pour relancer la boucle de notification si le cycle était "Terminé"
-#      - trigger: homeassistant
-#        event: start
-#        id: redemarrage
-#    conditions: []
-#    actions:
-#      - choose:
-#          # CAS A : DÉMARRAGE
-#          # On initialise tout : Reset compteur kWh, État=En marche, Heure de début.
-#          - conditions:
-#              - condition: trigger
-#                id: demarrage
-#            sequence:
-#              - action: utility_meter.reset
-#                target:
-#                  entity_id: sensor.compteur_lave_linge_cycle
-#              - action: input_select.select_option
-#                target:
-#                  entity_id: input_select.etat_lave_linge
-#                data:
-#                  option: En marche
-#              - action: input_datetime.set_datetime
-#                target:
-#                  entity_id: input_datetime.debut_machine
-#                data:
-#                  datetime: "{{ now() }}"
-#              - action: persistent_notification.create
-#                data:
-#                  message: La machine à laver est lancée.
-#                  title: 🧺 Lave-Linge Démarré
-#                  notification_id: >-
-#                    lave_linge_start_{{ states('input_datetime.debut_machine') | replace(' ', '_') }}
-
-#          # CAS B : FIN DU CYCLE
-#          # On valide la fin : État=Terminé, Heure de fin.
-#          - conditions:
-#              - condition: trigger
-#                id: fin
-#            sequence:
-#              - action: input_select.select_option
-#                target:
-#                  entity_id: input_select.etat_lave_linge
-#                data:
-#                  option: Terminé
-#              - action: input_datetime.set_datetime
-#                target:
-#                  entity_id: input_datetime.fin_machine
-#                data:
-#                  datetime: "{{ now() }}"
-
-#          # CAS C : REDÉMARRAGE HA
-#          # Sécurité : On attend que les entités soient prêtes pour éviter les erreurs de lecture.
-#          - conditions:
-#              - condition: trigger
-#                id: redemarrage
-#            sequence:
-#               # On attend que les entités soient disponibles
-#              - wait_template: |-
-#                  {{ has_value('input_select.etat_lave_linge') and 
-#                     has_value('switch.prismal') }} # [A_CHANGER] Remplacez par votre prise connectée
-#                timeout: "00:05:00"
-#                continue_on_timeout: false
-
-#      # BOUCLE DE NOTIFICATION (COMMUNE)
-#      - if:
-#          - condition: state
-#            entity_id: input_select.etat_lave_linge
-#            state: Terminé
-#          - condition: state
-#            # [A_CHANGER] Remplacez par votre prise connectée
-#            entity_id: switch.prismal
-#            state: "on"
-#        then:
-#          - repeat:
-#              sequence:
-#                - action: persistent_notification.create
-#                  data:
-#                    message: |
-#                      Cycle terminé.
-#                      ⏱️ Durée : {{ states('sensor.lave_linge_duree_cycle') }}
-#                      ⚡ Conso : {{ states('sensor.compteur_lave_linge_cycle') }} kWh
-#                      💶 Coût : {{ states('sensor.lave_linge_cout_cycle') }} €
-#                    title: 🧺 Lave-Linge Terminé
-#                    notification_id: >-
-#                      lave_linge_fin_{{ states('input_datetime.debut_machine') | replace(' ', '_') }}
-
-#                - delay:
-#                    hours: 0
-#                    minutes: 5
-#                    seconds: 0
-#                    milliseconds: 0
-
-#              while:
-#                - condition: state
-#                  # [A_CHANGER] La boucle s'arrête si la prise est éteinte
-#                  entity_id: switch.prismal
-#                  state: "on"

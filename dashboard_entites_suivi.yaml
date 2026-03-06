@@ -1,5 +1,8 @@
 # Cartes de Suivi Entités (V4.2)
 # Vous pouvez coller ces blocs dans une carte "Manuel" (YAML) sur votre dashboard.
+# 
+# Nécessite les cartes personnalisées (HACS) :
+# - mushroom-cards
 
 # ==========================================
 # 🍽️ LAVE-VAISSELLE
@@ -7,11 +10,13 @@
 type: vertical-stack
 cards:
   # ── EN-TÊTE ──
+  # Titre de la section indiquant quel appareil est surveillé
   - type: custom:mushroom-title-card
     title: 🍽️ Lave-Vaisselle
     subtitle: Suivi des entités du package
 
   # ── ÉTAT PRINCIPAL ──
+  # Carte dynamique résumant l'état et la durée du cycle en cours ou terminé
   - type: custom:mushroom-template-card
     primary: "{{ states('sensor.lave_vaisselle_etat') }}"
     secondary: >-
@@ -34,6 +39,7 @@ cards:
       {% endif %}
 
   # ── SENSORS TEMPLATE ──
+  # Capteurs générés par Home Assistant basés sur la prise connectée et les helpers
   - type: custom:mushroom-entity-card
     entity: binary_sensor.lave_vaisselle_en_marche
     name: En Marche (binary)
@@ -55,12 +61,20 @@ cards:
     icon_color: amber
 
   # ── UTILITY METER ──
+  # Le compteur global qui ne se remet jamais à zéro et accumule la consommation totale
+  - type: custom:mushroom-entity-card
+    entity: sensor.compteur_lave_vaisselle_total
+    name: Compteur Total (kWh)
+    icon_color: deep-purple
+
+  # Le compteur officiel qui accumule les kWh pendant le cycle et se reset au début du suivant
   - type: custom:mushroom-entity-card
     entity: sensor.compteur_lave_vaisselle_cycle
     name: Compteur Cycle (kWh)
     icon_color: purple
 
   # ── HELPERS ──
+  # Ces entités stockent des valeurs gérées par l'utilisateur ou par le Blueprint
   - type: custom:mushroom-entity-card
     entity: input_select.etat_lave_vaisselle
     name: Helper État
@@ -93,11 +107,13 @@ cards:
 type: vertical-stack
 cards:
   # ── EN-TÊTE ──
+  # Titre de la section indiquant quel appareil est surveillé
   - type: custom:mushroom-title-card
     title: 🧺 Lave-Linge
     subtitle: Suivi des entités du package
 
   # ── ÉTAT PRINCIPAL ──
+  # Carte dynamique résumant l'état et la durée du cycle en cours ou terminé
   - type: custom:mushroom-template-card
     primary: "{{ states('sensor.lave_linge_etat') }}"
     secondary: >-
@@ -120,6 +136,7 @@ cards:
       {% endif %}
 
   # ── SENSORS TEMPLATE ──
+  # Capteurs générés par Home Assistant basés sur la prise connectée et les helpers
   - type: custom:mushroom-entity-card
     entity: binary_sensor.lave_linge_en_marche
     name: En Marche (binary)
@@ -141,12 +158,20 @@ cards:
     icon_color: amber
 
   # ── UTILITY METER ──
+  # Le compteur global qui ne se remet jamais à zéro et accumule la consommation totale
+  - type: custom:mushroom-entity-card
+    entity: sensor.compteur_lave_linge_total
+    name: Compteur Total (kWh)
+    icon_color: deep-purple
+
+  # Le compteur officiel qui accumule les kWh pendant le cycle et se reset au début du suivant
   - type: custom:mushroom-entity-card
     entity: sensor.compteur_lave_linge_cycle
     name: Compteur Cycle (kWh)
     icon_color: purple
 
   # ── HELPERS ──
+  # Ces entités stockent des valeurs gérées par l'utilisateur ou par le Blueprint
   - type: custom:mushroom-entity-card
     entity: input_select.etat_lave_linge
     name: Helper État
