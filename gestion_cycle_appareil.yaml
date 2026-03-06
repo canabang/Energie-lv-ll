@@ -90,6 +90,7 @@ variables:
   duree_cycle: "sensor.{{ base_name }}_duree_cycle"
   cout_cycle: "sensor.{{ base_name }}_cout_cycle"
   titre_var: !input titre_notification
+  activer_notif: !input activer_notification_ha
 
   # Le beau message pré-construit utilisable par l'utilisateur !
   message_fin: >
@@ -189,7 +190,7 @@ action:
             # 1. Notification persistante HA en dur (incluse par défaut pour garder trace)
             - if:
                 - condition: template
-                  value_template: "{{ !input activer_notification_ha }}"
+                  value_template: "{{ activer_notif }}"
               then:
                 - service: persistent_notification.create
                   data:
