@@ -1,13 +1,12 @@
 blueprint:
   name: 🔄 Gestion Énergie - Cycle Appareil
   description: >
-    **Version Minimaliste (Plug&Play)**
-    Ce blueprint gère le cycle complet d'un appareil (Lave-Vaisselle, Lave-Linge...) à partir du package.
+    Ce blueprint gère le cycle complet d'un appareil (Lave-Vaisselle, Lave-Linge...) à partir du package "Énergie Lave-Vaisselle / Lave-Linge".<br><br>
     
-    Il base toute sa configuration sur le **Capteur de fonctionnement** (ex: `binary_sensor.lave_vaisselle_en_marche`).
-    Toutes les autres entités (`input_select`, `utility_meter`, dates...) sont "devinées" automatiquement via la racine du nom (`lave_vaisselle`).
+    Il base **toute** sa configuration sur le <b>Capteur de Fonctionnement</b> (ex: `binary_sensor.lave_vaisselle_en_marche`).
+    Toutes les autres entités associées (`input_select`, `utility_meter`, dates...) sont assignées automatiquement via la racine de ce nom (`lave_vaisselle`).<br><br>
     
-    À la fin du cycle, une variable **`{{ message_fin }}`** est générée. Vous pouvez l'utiliser dans vos propres actions de notification !
+    À la fin du cycle, une variable <code>{{ message_fin }}</code> pré-formatée contenant la durée, la consommation et le coût est générée. Vous pouvez utiliser cette variable directement dans vos propres actions (ex: une action `notify`).
   domain: automation
   input:
     # -----------------------------
