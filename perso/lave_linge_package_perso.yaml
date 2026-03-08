@@ -56,14 +56,14 @@ utility_meter:
   # Nom conservé depuis la production pour garder l'historique du recorder (2.79 kWh)
   compteur_prismal_total:
     source: sensor.prismal_energy
-    name: "Compteur Lave Linge Total"
+    name: "Compteur Prismal Total"
     unique_id: compteur_prismal_total
 
   # Compteur de Cycle — remis à zéro au début de chaque cycle par l'automatisation
   # Nom conservé : l'automatisation perso utilise compteur_prismal_cycle (pas compteur_lave_linge_cycle)
   compteur_prismal_cycle:
     source: sensor.prismal_energy
-    name: "Compteur Lave Linge Cycle"
+    name: "Compteur Prismal Cycle"
     unique_id: compteur_prismal_cycle
 
 # 3. TEMPLATE SENSORS

@@ -50,10 +50,10 @@ input_datetime:
 # --------------------------------------
 utility_meter:
   # Compteur Total — ne se remet jamais à zéro, accumule tout l'historique
-  # Nom conservé depuis la production pour garder l'historique du recorder (5.52 kWh)
+  # Entity_id en production : sensor.compteur_prislavvais_total (conservé pour le recorder)
   compteur_prislavvais_total:
     source: sensor.prislavvais_energy
-    name: "Compteur Lave Vaisselle Total"
+    name: "Compteur Prislavvais Total"
     unique_id: compteur_prislavvais_total
 
   # Compteur de Cycle — remis à zéro au début de chaque cycle par l'automatisation

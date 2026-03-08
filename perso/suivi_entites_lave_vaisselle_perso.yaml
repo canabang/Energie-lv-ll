@@ -1,0 +1,92 @@
+# ==========================================
+# 🍽️ SUIVI ENTITÉS LAVE-VAISSELLE (V4.2 - Perso)
+# ==========================================
+# Carte de débogage — Coller dans une carte "Manuel" (YAML)
+# Nécessite : mushroom-cards
+
+type: vertical-stack
+cards:
+  # ── EN-TÊTE ──
+  - type: custom:mushroom-title-card
+    title: 🍽️ Lave-Vaisselle
+    subtitle: Suivi des entités du package
+
+  # ── ÉTAT PRINCIPAL ──
+  - type: custom:mushroom-template-card
+    primary: "{{ states('sensor.lave_vaisselle_etat') }}"
+    secondary: >-
+      {% if is_state('sensor.lave_vaisselle_etat', 'Lavage') %}
+        En cours depuis {{ states('sensor.lave_vaisselle_duree_cycle') }}
+      {% elif is_state('sensor.lave_vaisselle_etat', 'Terminé') %}
+        Durée : {{ states('sensor.lave_vaisselle_duree_cycle') }}
+      {% else %}
+        En attente
+      {% endif %}
+    icon: mdi:dishwasher
+    entity: sensor.lave_vaisselle_etat
+    icon_color: >-
+      {% if is_state('sensor.lave_vaisselle_etat', 'Lavage') %}
+        blue
+      {% elif is_state('sensor.lave_vaisselle_etat', 'Terminé') %}
+        green
+      {% else %}
+        grey
+      {% endif %}
+
+  # ── SENSORS TEMPLATE ──
+  - type: custom:mushroom-entity-card
+    entity: binary_sensor.lave_vaisselle_en_marche
+    name: En Marche (binary)
+    icon_color: blue
+
+  - type: custom:mushroom-entity-card
+    entity: sensor.lave_vaisselle_etat
+    name: État Composite
+    icon_color: teal
+
+  - type: custom:mushroom-entity-card
+    entity: sensor.lave_vaisselle_duree_cycle
+    name: Durée Cycle
+    icon_color: orange
+
+  - type: custom:mushroom-entity-card
+    entity: sensor.lave_vaisselle_cout_cycle
+    name: Coût Cycle
+    icon_color: amber
+
+  # ── UTILITY METER ──
+  - type: custom:mushroom-entity-card
+    entity: sensor.compteur_prislavvais_total
+    name: Compteur Total (kWh)
+    icon_color: deep-purple
+
+  - type: custom:mushroom-entity-card
+    entity: sensor.compteur_lave_vaisselle_cycle
+    name: Compteur Cycle (kWh)
+    icon_color: purple
+
+  # ── HELPERS ──
+  - type: custom:mushroom-entity-card
+    entity: input_select.etat_lave_vaisselle
+    name: Helper État
+    icon_color: cyan
+
+  - type: custom:mushroom-entity-card
+    entity: input_datetime.debut_lave_vaisselle
+    name: Helper Début
+    icon_color: grey
+
+  - type: custom:mushroom-entity-card
+    entity: input_datetime.fin_lave_vaisselle
+    name: Helper Fin
+    icon_color: grey
+
+  - type: custom:mushroom-entity-card
+    entity: input_number.cout_du_kwh
+    name: Coût du kWh
+    icon_color: amber
+
+  - type: custom:mushroom-entity-card
+    entity: input_number.seuil_demarrage_lave_vaisselle
+    name: Seuil de Démarrage
+    icon_color: flash-outline
