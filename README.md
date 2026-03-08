@@ -19,7 +19,7 @@ Ce package contient une solution complète et robuste pour surveiller, calculer 
 
 ## 📂 Modules Disponibles
 
-Chaque appareil possède son propre dossier avec sa documentation détaillée et ses fichiers de configuration.
+Chaque appareil possède son propre dossier avec ses fichiers de configuration.
 
 ### 🧺 [Gestion du Lave-Linge](./lave_linge/)
 *   **Dossier** : [`lave_linge/`](./lave_linge/)
@@ -29,13 +29,11 @@ Chaque appareil possède son propre dossier avec sa documentation détaillée et
 *   **Dossier** : [`lave_vaisselle/`](./lave_vaisselle/)
 *   **Fonction** : Entités et Dashboards du cycle de lavage (Package & Dashboards).
 
-### 🤖 [Automatisations Personnelles](./perso/)
-*   **Dossier** : [`perso/`](./perso/)
-*   **Fonction** : Vos automatisations et dashboards liés à votre propre installation (Notifications Discord, IA K-2SO, Awtrix...).
-
 ---
 
 ## 🎨 Interface Utilisateur (Dashboards)
+
+> ⚠️ **Pré-requis HACS** : Ces interfaces s'appuient sur des cartes personnalisées que vous devez installer via HACS : `mushroom-cards`, `mini-graph-card`, `stack-in-card`, et `card-mod`.
 
 Vous trouverez dans les dossiers respectifs de chaque appareil **trois types de cartes Lovelace** prêtes à l'emploi. Vous pouvez copier leur code YAML directement dans votre dashboard Home Assistant.
 
@@ -55,9 +53,8 @@ Vous trouverez dans les dossiers respectifs de chaque appareil **trois types de 
 *   **Fichiers :** `carte_*_entites_suivi.yaml` (Dans les sous-dossiers `cartes_dashboard/`)
 *   **Usage :** Carte de débogage et de surveillance des variables cachées.
 *   **Contient :** L'affichage en temps réel de tous les Helpers (`input_select`, `datetime`), du compteur brut et de l'état des déclencheurs de vos machines.
-![Aperçu Suivi Entités](lave_vaisselle/cartes_dashboard/carte_lave_vaisselle_entites_suivi.png)
 
-> ⚠️ **Pré-requis HACS** : Ces interfaces s'appuient sur des cartes personnalisées que vous devez installer via HACS : `mushroom-cards`, `mini-graph-card`, `stack-in-card`, et `card-mod`.
+![Aperçu Suivi Entités](lave_vaisselle/cartes_dashboard/carte_lave_vaisselle_entites_suivi.png)
 
 ---
 
@@ -67,6 +64,14 @@ L'architecture repose désormais sur un système hybride extrêmement puissant e
 
 ### 1. Préparation des Entités (Le Package)
 Déposez le fichier de configuration de l'appareil souhaité dans votre dossier `packages/` :
+
+> 💡 **Si vous n'avez pas de dossier `packages`** : Créez simplement un dossier nommé `packages` à l'endroit où se trouve votre `configuration.yaml` dans Home Assistant. Ensuite, ajoutez ces 2 lignes dans votre fichier `configuration.yaml` :
+> ```yaml
+> homeassistant:
+>   packages: !include_dir_named packages
+> ```
+> *(N'oubliez pas de redémarrer Home Assistant ensuite)*
+
 *   [`lave_vaisselle_package.yaml`](./lave_vaisselle/package/lave_vaisselle_package.yaml)
 *   [`lave_linge_package.yaml`](./lave_linge/package/lave_linge_package.yaml)
 
@@ -88,7 +93,7 @@ Déposez le fichier de configuration de l'appareil souhaité dans votre dossier 
 > 💡 **Note** : Les deux packages déclarent le même Helper `input_number.cout_du_kwh` (prix du kWh). C'est **un seul et unique** paramètre partagé par les deux appareils. Il suffit qu'**un seul** des deux packages soit installé pour que le système fonctionne. Si vous installez les deux, commentez l'un des deux dans le fichier package.
 
 ### 2. Importation du Blueprint (Le Cerveau)
-Téléchargez ou copiez le fichier [`gestion_cycle_appareil.yaml`](./gestion_cycle_appareil.yaml) dans le dossier `blueprints/automation/` de votre Home Assistant.
+Téléchargez ou copiez le fichier [`blueprint_gestion_cycle_appareil.yaml`](./blueprint_gestion_cycle_appareil.yaml) dans le dossier `blueprints/automation/` de votre Home Assistant.
 > *Ce fichier Blueprint universel contient toute la logique complexe de suivi (reset des compteurs, timers, détection intelligente).*
 
 ### 3. Création de l'Automatisation via l'Interface (L'Action)
@@ -103,7 +108,7 @@ Vous n'aurez qu'à configurer **2 entités** :
 Le Blueprint déduira automatiquement le reste de vos entités. Vous avez le contrôle total sur la manière d'être notifié :
 *   **Notification Persistante HA :** Vous pouvez activer/désactiver l'apparition de la notification locale de Home Assistant.
 *   **Message de Fin Personnalisable :** Le texte de la notification est entièrement personnalisable depuis l'interface du Blueprint.
-*   **Actions Libres (Démarrage & Fin) :** Deux blocs d'actions libres vous permettent de construire vos propres notifications (Discord, Telegram, scripts K-2SO, Alexa...).
+*   **Actions Libres (Démarrage & Fin) :** Deux blocs d'actions libres vous permettent de construire vos propres notifications (Discord, Telegram, awtrix, Alexa...).
 
 > 💡 **Le petit plus magique :** Vous remarquerez que le texte par défaut contient des balises comme `{{ states(cout_cycle) }}`. Vous pouvez modifier la phrase comme bon vous semble, tant que vous gardez ces balises, le Blueprint s'occupera d'aller chercher et calculer automatiquement le bon capteur de coût, de durée ou d'énergie pour l'appareil concerné ! Vous pourrez ensuite réutiliser ce texte final dans vos Actions via la variable globale `{{ message_fin }}`.
 
