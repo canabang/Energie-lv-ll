@@ -35,6 +35,8 @@ Chaque appareil possède son propre dossier avec ses fichiers de configuration.
 
 > ⚠️ **Pré-requis HACS** : Ces interfaces s'appuient sur des cartes personnalisées que vous devez installer via HACS : `mushroom-cards`, `mini-graph-card`, `stack-in-card`, et `card-mod`.
 
+![Aperçu Global du Dashboard](dashboard_toutes_les_cartes.png)
+
 Vous trouverez dans les dossiers respectifs de chaque appareil **trois types de cartes Lovelace** prêtes à l'emploi. Vous pouvez copier leur code YAML directement dans votre dashboard Home Assistant.
 
 ### 1. Le Widget "Streamline" (Compact)
@@ -88,7 +90,7 @@ Déposez le fichier de configuration de l'appareil souhaité dans votre dossier 
 >
 > Sans remplacer ces variables clés, les capteurs ne remonteront aucune mesure et le blueprint de notifications ne s'activera pas !
 
-> *Ce fichier `package` va générer automatiquement tous les capteurs virtuels, les compteurs de consommation et les variables (Helpers) nécessaires au bon fonctionnement.*
+> *Ce fichier `package` va générer automatiquement toutes les entités, les compteurs de consommation et les variables (Helpers) nécessaires au bon fonctionnement.*
 
 > 💡 **Note** : Les deux packages déclarent le même Helper `input_number.cout_du_kwh` (prix du kWh). C'est **un seul et unique** paramètre partagé par les deux appareils. Il suffit qu'**un seul** des deux packages soit installé pour que le système fonctionne. Si vous installez les deux, commentez l'un des deux dans le fichier package.
 
@@ -104,6 +106,9 @@ Vous n'aurez qu'à configurer **2 entités** :
 1. Le capteur de fonctionnement de l'appareil (ex: `binary_sensor.lave_vaisselle_en_marche`).
 2. La prise connectée physique (ex: `switch.votre_prise`).
 
+![Blueprint Interface 1](blueprint_gestion_cycle_appareil_01.png)
+![Blueprint Interface 2](blueprint_gestion_cycle_appareil_02.png)
+
 ### 🔌 Options & Actions Libres
 Le Blueprint déduira automatiquement le reste de vos entités. Vous avez le contrôle total sur la manière d'être notifié :
 *   **Notification Persistante HA :** Vous pouvez activer/désactiver l'apparition de la notification locale de Home Assistant.
@@ -112,6 +117,14 @@ Le Blueprint déduira automatiquement le reste de vos entités. Vous avez le con
 
 > 💡 **Le petit plus magique :** Vous remarquerez que le texte par défaut contient des balises comme `{{ states(cout_cycle) }}`. Vous pouvez modifier la phrase comme bon vous semble, tant que vous gardez ces balises, le Blueprint s'occupera d'aller chercher et calculer automatiquement le bon capteur de coût, de durée ou d'énergie pour l'appareil concerné ! Vous pourrez ensuite réutiliser ce texte final dans vos Actions via la variable globale `{{ message_fin }}`.
 
+### 4. Configuration Initiale de l'Énergie (À faire une seule fois)
+Après le redémarrage de Home Assistant, toutes vos nouvelles entités (Helpers) ont été créées. Il reste **une étape indispensable** pour que le système puisse calculer le coût d'un lavage en euros :
+
+1. Vous devez initialiser le prix de votre électricité dans l'entité `input_number.cout_du_kwh`.
+2. Pour ce faire, le moyen le plus simple est de **copier le code de la carte "Suivi Entités"** (ex: `carte_lave_linge_entites_suivi.yaml`) sur l'un de vos Dashboards.
+3. Depuis cette carte visuelle sur votre téléphone ou PC, vous verrez une ligne **"Coût du kWh"**. Entrez simplement votre tarif (ex: `0.25` pour 25 centimes). 
+4. La valeur sera sauvegardée définitivement et partagée pour les deux appareils !
+
 ---
 
 ## 📋 Pré-requis Généraux
@@ -119,4 +132,18 @@ Le Blueprint déduira automatiquement le reste de vos entités. Vous avez le con
 *   Une **prise connectée** avec mesure de consommation (Puissance W & Energie kWh) pour chaque appareil.
 *   Avoir configuré le `packages: !include_dir_named packages` dans votre `configuration.yaml`.
 *   Avoir redémarré Home Assistant (ou rechargé les automatisations+blueprints) après l'ajout des fichiers.
+
+---
+
+## 🎓 FAQ & Pièges à éviter (Pour les débutants)
+Pour ceux qui se lancent, voici les "pièges" classiques dans lesquels il est facile de tomber lors de la configuration initiale :
+
+1. ⚠️ **Ne pas confondre Puissance (Watts) et Énergie (kWh) :**
+   C'est l'erreur numéro un ! Pour savoir si la machine tourne, l'automatisation regarde la **Puissance** (la consommation instantanée en `W` ou `kW`). Mais pour que le compteur `utility_meter` fonctionne et calcule le coût mensuel, il **doit** recevoir l'**Énergie** (le volume total accumulé en `kWh`). Vérifiez minutieusement vos types d'entité lors de la personnalisation du Package !
+2. 🔄 **Blueprints locaux = Recharger YAML :**
+   Quand vous copiez manuellement le fichier Blueprint dans votre dossier, Home Assistant ne le "voit" pas directement. Pensez bien à aller dans *Outils de développement* > *YAML* et à cliquer sur **Recharger les Automatisations** (ou a minima redémarrer le système) avant d'essayer de créer votre automatisation.
+3. 🔁 **L'initialisation post-reboot :**
+   Comme expliqué à l'Étape 4, une fois toutes vos entités générées, le capteur de coût ne calculera rien si votre prix du kWh est à `0.00€`. Entrez votre tarif via la carte Lovelace.
+4. ⚙️ **Conflits de Helpers (Si vous installez les 2 packages) :**
+   Le Lave-Linge et le Lave-Vaisselle partagent le *même* Helper pour le prix du kWh (`input_number.cout_du_kwh`). Si vous activez les *deux* fichiers YAML package, il y aura un doublon de création d'entité, et Home Assistant affichera une erreur dans les logs. Pensez simplement à "commenter" (avec des `#`) tout le bloc définissant `cout_du_kwh` dans le deuxième fichier package que vous installez.
 
