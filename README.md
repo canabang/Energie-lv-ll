@@ -23,11 +23,11 @@ Chaque appareil possède son propre dossier avec sa documentation détaillée et
 
 ### 🧺 [Gestion du Lave-Linge](./lave_linge/)
 *   **Dossier** : [`lave_linge/`](./lave_linge/)
-*   **Fonction** : Entités et Dashboards du cycle de lavage (Package & Templates).
+*   **Fonction** : Entités et Dashboards du cycle de lavage (Package & Dashboards).
 
 ### 🍽️ [Gestion du Lave-Vaisselle](./lave_vaisselle/)
 *   **Dossier** : [`lave_vaisselle/`](./lave_vaisselle/)
-*   **Fonction** : Entités et Dashboards du cycle de lavage (Package & Templates).
+*   **Fonction** : Entités et Dashboards du cycle de lavage (Package & Dashboards).
 
 ### 🤖 [Automatisations Personnelles](./perso/)
 *   **Dossier** : [`perso/`](./perso/)
@@ -40,22 +40,22 @@ Chaque appareil possède son propre dossier avec sa documentation détaillée et
 Vous trouverez dans les dossiers respectifs de chaque appareil **trois types de cartes Lovelace** prêtes à l'emploi. Vous pouvez copier leur code YAML directement dans votre dashboard Home Assistant.
 
 ### 1. Le Widget "Streamline" (Compact)
-*   **Fichiers :** `carte_*_streamline.yaml` (Dans les dossiers `lave_linge/` & `lave_vaisselle/`)
+*   **Fichiers :** `carte_*_streamline.yaml` (Dans les sous-dossiers `cartes_dashboard/`)
 *   **Usage :** Idéal pour une vue d'ensemble sur un écran d'accueil (mobile friendly).
 *   **Bonus :** Animation CSS "Aura Verte" autour de l'icône lorsque l'appareil est en marche.
-![Aperçu Streamline Lave Linge](lave_linge/carte_lave_linge_streamline.png)
+![Aperçu Streamline Lave Linge](lave_linge/cartes_dashboard/carte_lave_linge_streamline.png)
 
 ### 2. La Carte "Analyse Détaillée" (Standard)
-*   **Fichiers :** `dashboard_final_*_perso.yaml` (Dans le dossier `perso/`)
+*   **Fichiers :** `carte_lave_*.yaml` (Dans les sous-dossiers `cartes_dashboard/`)
 *   **Usage :** Idéal pour une page dédiée à l'énergie.
 *   **Contient :** Historique de la consommation sur les dernières 24h, monitoring de la tension électrique (V), état en direct et bouton d'action sur la prise.
-![Aperçu Analyse Détaillée Lave Linge](lave_linge/carte_lave_linge.png)
+![Aperçu Analyse Détaillée Lave Linge](lave_linge/cartes_dashboard/carte_lave_linge.png)
 
 ### 3. Le Dashboard "Suivi Entités" (Admin)
-*   **Fichiers :** `dashboard_entites_suivi.yaml` (Dans les dossiers `lave_linge/` & `lave_vaisselle/`)
+*   **Fichiers :** `carte_*_entites_suivi.yaml` (Dans les sous-dossiers `cartes_dashboard/`)
 *   **Usage :** Carte de débogage et de surveillance des variables cachées.
 *   **Contient :** L'affichage en temps réel de tous les Helpers (`input_select`, `datetime`), du compteur brut et de l'état des déclencheurs de vos machines.
-![Aperçu Suivi Entités](lave_vaisselle_entites_suivi.png)
+![Aperçu Suivi Entités](lave_vaisselle/cartes_dashboard/carte_lave_vaisselle_entites_suivi.png)
 
 > ⚠️ **Pré-requis HACS** : Ces interfaces s'appuient sur des cartes personnalisées que vous devez installer via HACS : `mushroom-cards`, `mini-graph-card`, `stack-in-card`, et `card-mod`.
 
