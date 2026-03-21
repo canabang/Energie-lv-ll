@@ -102,10 +102,10 @@ template:
         unique_id: lave_linge_duree_cycle
         icon: mdi:timer
         state: >
-          {% set debut = states('input_datetime.debut_machine') %}
-          {% set fin = states('input_datetime.fin_machine') %}
+          {% set debut = states('input_datetime.debut_lave_linge') %}
+          {% set fin = states('input_datetime.fin_lave_linge') %}
           {% set etat = states('sensor.lave_linge_etat') %}
-          
+
           {% if debut != 'unknown' %}
             {% set debut_ts = as_timestamp(debut) %}
             {% set now_ts = as_timestamp(now()) %}
@@ -122,8 +122,8 @@ template:
             Inconnu
           {% endif %}
         attributes:
-          debut: "{{ states('input_datetime.debut_machine') }}"
-          fin: "{{ states('input_datetime.fin_machine') }}"
+          debut: "{{ states('input_datetime.debut_lave_linge') }}"
+          fin: "{{ states('input_datetime.fin_lave_linge') }}"
 
       # Coût du cycle en cours
       # Utilise compteur_prismal_cycle (nom en production)

@@ -31,7 +31,7 @@ actions:
               option: En marche
           - action: input_datetime.set_datetime
             target:
-              entity_id: input_datetime.debut_machine
+              entity_id: input_datetime.debut_lave_linge
             data:
               datetime: "{{ now() }}"
           - action: script.notification_alexa
@@ -48,7 +48,7 @@ actions:
               option: Terminé
           - action: input_datetime.set_datetime
             target:
-              entity_id: input_datetime.fin_machine
+              entity_id: input_datetime.fin_lave_linge
             data:
               datetime: "{{ now() }}"
       - conditions:
@@ -74,7 +74,7 @@ actions:
               data:
                 mission: machine à laver finie
                 consigne: >
-                  Annonce la fin du cycle.
+                  Annonce la fin du cycle. ironise sur le linge a etendre
 
                   Consommation : {{ states('sensor.compteur_prismal_cycle') }}
                   kWh.
@@ -106,7 +106,8 @@ actions:
                   ⚡ Consommation : {{ states('sensor.compteur_prismal_cycle') }}
                   kWh.  ⏱️ Durée : {{ states('sensor.lave_linge_duree_cycle')
                   }}. 💶 Coût : {{ states('sensor.lave_linge_cout_cycle') }} €.
-                image_url: https://i.ibb.co/pRvFCBy/home-assistant.png
+                image_url: >-
+                  https://ha.canagalactica.ovh/local/discord_icons/icon_machine_laver_on.png
             - action: persistent_notification.create
               data:
                 message: |
